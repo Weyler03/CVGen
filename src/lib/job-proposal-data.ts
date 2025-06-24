@@ -5,6 +5,7 @@ export interface JobProposalData {
       projectTitle: string
       date: string
       introduction: string
+      logo: string // Add this new field for the logo
     }
     projectScope: {
       description: string
@@ -36,6 +37,7 @@ export interface JobProposalData {
       projectTitle: "",
       date: new Date().toISOString().split("T")[0],
       introduction: "",
+      logo: "", // Add this new field
     },
     projectScope: {
       description: "",

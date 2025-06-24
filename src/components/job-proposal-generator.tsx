@@ -1,5 +1,6 @@
 "use client"
 
+import type React from "react"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Trash2, Download, Eye } from "lucide-react"
 import { type JobProposalData, initialJobProposalData, proposalTemplates } from "@/lib/job-proposal-data"
-import JobProposalTemplate from "./job-proposal-tamplate"
+import JobProposalTemplate from "@/components/job-proposal-template"
 
 export default function JobProposalGenerator() {
   const [proposalData, setProposalData] = useState<JobProposalData>(initialJobProposalData)
@@ -91,6 +92,34 @@ export default function JobProposalGenerator() {
     }))
   }
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Check file size (2MB limit)
+      if (file.size > 2 * 1024 * 1024) {
+        alert("El archivo es demasiado grande. El tamaño máximo es 2MB.")
+        return
+      }
+
+      // Check file type
+      if (!file.type.startsWith("image/")) {
+        alert("Por favor selecciona un archivo de imagen válido.")
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const result = event.target?.result as string
+        updateBasicInfo("logo", result)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeLogo = () => {
+    updateBasicInfo("logo", "")
+  }
+
   if (showPreview) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
@@ -167,6 +196,40 @@ export default function JobProposalGenerator() {
                       value={proposalData.basicInfo.date}
                       onChange={(e) => updateBasicInfo("date", e.target.value)}
                     />
+                  </div>
+                  <div className="col-span-2">
+                    <Label htmlFor="logo">Logo de la Empresa (opcional)</Label>
+                    <div className="space-y-4">
+                      <Input
+                        id="logo"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="cursor-pointer"
+                      />
+                      {proposalData.basicInfo.logo && (
+                        <div className="flex items-center space-x-4">
+                          <div className="relative">
+                            <img
+                              src={proposalData.basicInfo.logo || "/placeholder.svg"}
+                              alt="Logo preview"
+                              className="h-16 w-auto object-contain border rounded"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                              onClick={removeLogo}
+                            >
+                              ×
+                            </Button>
+                          </div>
+                          <p className="text-sm text-gray-600">Logo cargado correctamente</p>
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-500">Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 2MB</p>
+                    </div>
                   </div>
                 </div>
                 <div>

@@ -16,6 +16,15 @@ export default function JobProposalTemplate({ template, data }: JobProposalTempl
     return (
       <div className="bg-white shadow-lg max-w-4xl mx-auto p-8 print:shadow-none">
         <div className="text-center mb-8 pb-6 border-b-2 border-gray-200">
+          {basicInfo.logo && (
+            <div className="flex justify-center mb-4">
+              <img
+                src={basicInfo.logo || "/placeholder.svg"}
+                alt="Company Logo"
+                className="h-16 w-auto object-contain"
+              />
+            </div>
+          )}
           <h1 className="text-3xl font-bold mb-2">Propuesta de Proyecto</h1>
           <h2 className="text-xl text-gray-600">{basicInfo.projectTitle}</h2>
           <p className="mt-4">
@@ -122,20 +131,33 @@ export default function JobProposalTemplate({ template, data }: JobProposalTempl
     return (
       <div className="bg-white shadow-lg max-w-4xl mx-auto print:shadow-none">
         <div className="bg-slate-800 text-white p-8">
-          <h1 className="text-3xl font-bold">{basicInfo.projectTitle}</h1>
-          <div className="flex justify-between mt-4">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm opacity-80">Preparado por:</p>
-              <p className="font-semibold">{basicInfo.yourName}</p>
+              <h1 className="text-3xl font-bold">{basicInfo.projectTitle}</h1>
+              <div className="flex justify-between mt-4">
+                <div>
+                  <p className="text-sm opacity-80">Preparado por:</p>
+                  <p className="font-semibold">{basicInfo.yourName}</p>
+                </div>
+                <div>
+                  <p className="text-sm opacity-80">Para:</p>
+                  <p className="font-semibold">{basicInfo.clientName}</p>
+                </div>
+                <div>
+                  <p className="text-sm opacity-80">Fecha:</p>
+                  <p className="font-semibold">{formattedDate}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-sm opacity-80">Para:</p>
-              <p className="font-semibold">{basicInfo.clientName}</p>
-            </div>
-            <div>
-              <p className="text-sm opacity-80">Fecha:</p>
-              <p className="font-semibold">{formattedDate}</p>
-            </div>
+            {basicInfo.logo && (
+              <div className="ml-8">
+                <img
+                  src={basicInfo.logo || "/placeholder.svg"}
+                  alt="Company Logo"
+                  className="h-16 w-auto object-contain bg-white p-2 rounded"
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -245,17 +267,30 @@ export default function JobProposalTemplate({ template, data }: JobProposalTempl
     return (
       <div className="bg-white shadow-lg max-w-4xl mx-auto print:shadow-none">
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-8">
-          <h1 className="text-4xl font-bold">{basicInfo.projectTitle}</h1>
-          <p className="text-lg mt-2">Una propuesta para {basicInfo.clientName}</p>
-          <div className="flex justify-between mt-6 text-sm">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="opacity-80">Por:</p>
-              <p className="font-semibold">{basicInfo.yourName}</p>
+              <h1 className="text-4xl font-bold">{basicInfo.projectTitle}</h1>
+              <p className="text-lg mt-2">Una propuesta para {basicInfo.clientName}</p>
+              <div className="flex justify-between mt-6 text-sm">
+                <div>
+                  <p className="opacity-80">Por:</p>
+                  <p className="font-semibold">{basicInfo.yourName}</p>
+                </div>
+                <div>
+                  <p className="opacity-80">Fecha:</p>
+                  <p className="font-semibold">{formattedDate}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="opacity-80">Fecha:</p>
-              <p className="font-semibold">{formattedDate}</p>
-            </div>
+            {basicInfo.logo && (
+              <div className="ml-8">
+                <img
+                  src={basicInfo.logo || "/placeholder.svg"}
+                  alt="Company Logo"
+                  className="h-20 w-auto object-contain bg-white/10 backdrop-blur-sm p-3 rounded-lg"
+                />
+              </div>
+            )}
           </div>
         </div>
 
