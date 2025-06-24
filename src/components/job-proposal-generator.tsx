@@ -7,10 +7,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Trash2, Download, Eye } from "lucide-react"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
+import { Plus, Trash2, Download, Eye, Palette } from "lucide-react"
 import { type JobProposalData, initialJobProposalData, proposalTemplates } from "@/lib/job-proposal-data"
+import { fontOptions, colorPresets } from "@/lib/cv-data"
 import JobProposalTemplate from "@/components/job-proposal-template"
+import { printJobProposal } from "@/components/print-utils"
 
 export default function JobProposalGenerator() {
   const [proposalData, setProposalData] = useState<JobProposalData>(initialJobProposalData)
@@ -22,6 +27,24 @@ export default function JobProposalGenerator() {
     setProposalData((prev) => ({
       ...prev,
       basicInfo: { ...prev.basicInfo, [field]: value },
+    }))
+  }
+
+  const updateCustomization = (field: keyof typeof proposalData.customization, value: any) => {
+    setProposalData((prev) => ({
+      ...prev,
+      customization: { ...prev.customization, [field]: value },
+    }))
+  }
+
+  const applyColorPreset = (preset: (typeof colorPresets)[0]) => {
+    setProposalData((prev) => ({
+      ...prev,
+      customization: {
+        ...prev.customization,
+        headerColor: preset.header,
+        accentColor: preset.accent,
+      },
     }))
   }
 
@@ -120,6 +143,10 @@ export default function JobProposalGenerator() {
     updateBasicInfo("logo", "")
   }
 
+  const handlePrint = () => {
+    printJobProposal(selectedTemplate, proposalData)
+  }
+
   if (showPreview) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
@@ -130,7 +157,7 @@ export default function JobProposalGenerator() {
               <Button onClick={() => setShowPreview(false)} variant="outline">
                 Volver a Editar
               </Button>
-              <Button onClick={() => window.print()}>
+              <Button onClick={handlePrint}>
                 <Download className="w-4 h-4 mr-2" />
                 Descargar PDF
               </Button>
@@ -152,11 +179,16 @@ export default function JobProposalGenerator() {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="basic">Información Básica</TabsTrigger>
                 <TabsTrigger value="scope">Alcance del Proyecto</TabsTrigger>
                 <TabsTrigger value="deliverables">Entregables</TabsTrigger>
                 <TabsTrigger value="timeline">Cronograma y Precio</TabsTrigger>
+                {selectedTemplate === "custom" && (
+                  <TabsTrigger value="customization">
+                    <Palette className="w-4 h-4" />
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="basic" className="space-y-4">
@@ -397,6 +429,170 @@ export default function JobProposalGenerator() {
                   </div>
                 </div>
               </TabsContent>
+
+              {selectedTemplate === "custom" && (
+                <TabsContent value="customization" className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Personalización</h3>
+
+                    {/* Color Presets */}
+                    <div className="mb-6">
+                      <Label className="text-base font-medium">Combinaciones de Colores</Label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                        {colorPresets.map((preset) => (
+                          <Button
+                            key={preset.name}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => applyColorPreset(preset)}
+                            className="justify-start"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.header }} />
+                              <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.accent }} />
+                              <span className="text-xs">{preset.name}</span>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Custom Colors */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <div>
+                        <Label htmlFor="headerColor">Color de Cabecera</Label>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            id="headerColor"
+                            type="color"
+                            value={proposalData.customization.headerColor}
+                            onChange={(e) => updateCustomization("headerColor", e.target.value)}
+                            className="w-16 h-10"
+                          />
+                          <Input
+                            value={proposalData.customization.headerColor}
+                            onChange={(e) => updateCustomization("headerColor", e.target.value)}
+                            placeholder="#1e293b"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="accentColor">Color de Acento</Label>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            id="accentColor"
+                            type="color"
+                            value={proposalData.customization.accentColor}
+                            onChange={(e) => updateCustomization("accentColor", e.target.value)}
+                            className="w-16 h-10"
+                          />
+                          <Input
+                            value={proposalData.customization.accentColor}
+                            onChange={(e) => updateCustomization("accentColor", e.target.value)}
+                            placeholder="#3b82f6"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Font Selection */}
+                    <div className="mb-6">
+                      <Label>Fuente</Label>
+                      <Select
+                        value={proposalData.customization.fontFamily}
+                        onValueChange={(value) => updateCustomization("fontFamily", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {fontOptions.map((font) => (
+                            <SelectItem key={font.value} value={font.value}>
+                              {font.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Header Style */}
+                    <div className="mb-6">
+                      <Label>Estilo de Cabecera</Label>
+                      <Select
+                        value={proposalData.customization.headerStyle}
+                        onValueChange={(value) => updateCustomization("headerStyle", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="solid">Sólido</SelectItem>
+                          <SelectItem value="gradient">Gradiente</SelectItem>
+                          <SelectItem value="pattern">Patrón</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Logo Position */}
+                    <div className="mb-6">
+                      <Label>Posición del Logo</Label>
+                      <Select
+                        value={proposalData.customization.logoPosition}
+                        onValueChange={(value) => updateCustomization("logoPosition", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="left">Izquierda</SelectItem>
+                          <SelectItem value="center">Centro</SelectItem>
+                          <SelectItem value="right">Derecha</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Section Spacing */}
+                    <div className="mb-6">
+                      <Label>Espaciado de Secciones</Label>
+                      <Select
+                        value={proposalData.customization.sectionSpacing}
+                        onValueChange={(value) => updateCustomization("sectionSpacing", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="compact">Compacto</SelectItem>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="spacious">Espacioso</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Border Radius */}
+                    <div className="mb-6">
+                      <Label>Redondez de Bordes: {proposalData.customization.borderRadius}px</Label>
+                      <Slider
+                        value={[proposalData.customization.borderRadius]}
+                        onValueChange={(value) => updateCustomization("borderRadius", value[0])}
+                        max={20}
+                        min={0}
+                        step={1}
+                        className="mt-2"
+                      />
+                    </div>
+
+                    {/* Show Icons */}
+                    <div className="flex items-center justify-between">
+                      <Label>Mostrar Iconos</Label>
+                      <Switch
+                        checked={proposalData.customization.showIcons}
+                        onCheckedChange={(checked) => updateCustomization("showIcons", checked)}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+              )}
             </Tabs>
           </CardContent>
         </Card>

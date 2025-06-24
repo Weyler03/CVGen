@@ -1,4 +1,5 @@
 import type { CVData } from "@/lib/cv-data"
+import { Mail, Phone, MapPin, Linkedin, Globe, Briefcase, GraduationCap, Award } from "lucide-react"
 
 interface CVTemplateProps {
   template: string
@@ -6,12 +7,432 @@ interface CVTemplateProps {
 }
 
 export default function CVTemplate({ template, data }: CVTemplateProps) {
-  const { personalInfo, experience, education, skills } = data
+  const { personalInfo, experience, education, skills, customization } = data
 
+  const getSkillPercentage = (level: string) => {
+    switch (level) {
+      case "Básico":
+        return 25
+      case "Intermedio":
+        return 50
+      case "Avanzado":
+        return 75
+      case "Experto":
+        return 100
+      default:
+        return 50
+    }
+  }
+
+  const SkillBar = ({ skill }: { skill: (typeof skills)[0] }) => {
+    const percentage = getSkillPercentage(skill.level)
+
+    if (customization.skillBarStyle === "circles") {
+      return (
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-medium">{skill.name}</span>
+          <div className="flex space-x-1">
+            {[1, 2, 3, 4, 5].map((dot) => (
+              <div
+                key={dot}
+                className={`w-3 h-3 rounded-full ${
+                  dot <= percentage / 20 ? `bg-[${customization.accentColor}]` : "bg-gray-200"
+                }`}
+                style={{
+                  backgroundColor: dot <= percentage / 20 ? customization.accentColor : "#e5e7eb",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    if (customization.skillBarStyle === "dots") {
+      return (
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-medium">{skill.name}</span>
+          <div className="flex space-x-1">
+            {[1, 2, 3, 4].map((dot) => (
+              <div
+                key={dot}
+                className={`w-2 h-2 rounded-full ${
+                  dot <= percentage / 25 ? `bg-[${customization.accentColor}]` : "bg-gray-200"
+                }`}
+                style={{
+                  backgroundColor: dot <= percentage / 25 ? customization.accentColor : "#e5e7eb",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    // Default bars
+    return (
+      <div className="mb-3">
+        <div className="flex justify-between items-center mb-1">
+          <span className="font-medium">{skill.name}</span>
+          <span className="text-sm text-gray-600">{skill.level}</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="h-2 rounded-full transition-all duration-300"
+            style={{
+              width: `${percentage}%`,
+              backgroundColor: customization.accentColor,
+            }}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // Componentes reutilizables para las secciones
+  const PersonalInfoSection = ({ compact = false }: { compact?: boolean }) => (
+    <div className={compact ? "space-y-2" : "space-y-3"}>
+      {personalInfo.email && (
+        <div className="flex items-center">
+          {customization.showIcons && <Mail className="w-4 h-4 mr-2 flex-shrink-0" />}
+          <span className={compact ? "text-sm" : ""}>{personalInfo.email}</span>
+        </div>
+      )}
+      {personalInfo.phone && (
+        <div className="flex items-center">
+          {customization.showIcons && <Phone className="w-4 h-4 mr-2 flex-shrink-0" />}
+          <span className={compact ? "text-sm" : ""}>{personalInfo.phone}</span>
+        </div>
+      )}
+      {personalInfo.address && (
+        <div className="flex items-center">
+          {customization.showIcons && <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />}
+          <span className={compact ? "text-sm" : ""}>{personalInfo.address}</span>
+        </div>
+      )}
+      {personalInfo.linkedin && (
+        <div className="flex items-center">
+          {customization.showIcons && <Linkedin className="w-4 h-4 mr-2 flex-shrink-0" />}
+          <span className={compact ? "text-sm" : ""}>{personalInfo.linkedin}</span>
+        </div>
+      )}
+      {personalInfo.website && (
+        <div className="flex items-center">
+          {customization.showIcons && <Globe className="w-4 h-4 mr-2 flex-shrink-0" />}
+          <span className={compact ? "text-sm" : ""}>{personalInfo.website}</span>
+        </div>
+      )}
+    </div>
+  )
+
+  const SummarySection = ({ compact = false }: { compact?: boolean }) =>
+    personalInfo.summary ? (
+      <div>
+        <h2
+          className={`${compact ? "text-lg" : "text-2xl"} font-bold mb-4 pb-2 border-b-2 flex items-center`}
+          style={{
+            color: customization.headerColor,
+            borderColor: customization.accentColor,
+          }}
+        >
+          {customization.showIcons && <Award className={`${compact ? "w-5 h-5" : "w-6 h-6"} mr-2`} />}
+          Resumen Profesional
+        </h2>
+        <p className={`leading-relaxed ${compact ? "text-sm" : ""}`}>{personalInfo.summary}</p>
+      </div>
+    ) : null
+
+  const ExperienceSection = ({ compact = false }: { compact?: boolean }) =>
+    experience.length > 0 ? (
+      <div>
+        <h2
+          className={`${compact ? "text-lg" : "text-2xl"} font-bold mb-4 pb-2 border-b-2 flex items-center`}
+          style={{
+            color: customization.headerColor,
+            borderColor: customization.accentColor,
+          }}
+        >
+          {customization.showIcons && <Briefcase className={`${compact ? "w-5 h-5" : "w-6 h-6"} mr-2`} />}
+          Experiencia Laboral
+        </h2>
+        {experience.map((exp) => (
+          <div key={exp.id} className="mb-6">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <h3
+                  className={`${compact ? "text-lg" : "text-xl"} font-semibold`}
+                  style={{ color: customization.headerColor }}
+                >
+                  {exp.position}
+                </h3>
+                <p
+                  className={`${compact ? "text-base" : "text-lg"} font-medium`}
+                  style={{ color: customization.accentColor }}
+                >
+                  {exp.company}
+                </p>
+              </div>
+              <span
+                className={`${compact ? "text-xs" : "text-sm"} px-3 py-1 rounded-full`}
+                style={{
+                  backgroundColor: `${customization.accentColor}20`,
+                  color: customization.accentColor,
+                  borderRadius: `${customization.borderRadius}px`,
+                }}
+              >
+                {exp.startDate} - {exp.current ? "Presente" : exp.endDate}
+              </span>
+            </div>
+            {exp.description && <p className={`leading-relaxed ${compact ? "text-sm" : ""}`}>{exp.description}</p>}
+          </div>
+        ))}
+      </div>
+    ) : null
+
+  const EducationSection = ({ compact = false }: { compact?: boolean }) =>
+    education.length > 0 ? (
+      <div>
+        <h2
+          className={`${compact ? "text-lg" : "text-2xl"} font-bold mb-4 pb-2 border-b-2 flex items-center`}
+          style={{
+            color: customization.headerColor,
+            borderColor: customization.accentColor,
+          }}
+        >
+          {customization.showIcons && <GraduationCap className={`${compact ? "w-5 h-5" : "w-6 h-6"} mr-2`} />}
+          Educación
+        </h2>
+        {education.map((edu) => (
+          <div key={edu.id} className="mb-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3
+                  className={`${compact ? "text-base" : "text-lg"} font-semibold`}
+                  style={{ color: customization.headerColor }}
+                >
+                  {edu.degree} en {edu.field}
+                </h3>
+                <p style={{ color: customization.accentColor }}>{edu.institution}</p>
+                {edu.gpa && <p className={`${compact ? "text-xs" : "text-sm"} opacity-75`}>Promedio: {edu.gpa}</p>}
+              </div>
+              <span
+                className={`${compact ? "text-xs" : "text-sm"} px-3 py-1 rounded-full`}
+                style={{
+                  backgroundColor: `${customization.accentColor}20`,
+                  color: customization.accentColor,
+                  borderRadius: `${customization.borderRadius}px`,
+                }}
+              >
+                {edu.startDate} - {edu.endDate}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : null
+
+  const SkillsSection = ({ compact = false }: { compact?: boolean }) =>
+    skills.length > 0 ? (
+      <div>
+        <h2
+          className={`${compact ? "text-lg" : "text-2xl"} font-bold mb-4 pb-2 border-b-2 flex items-center`}
+          style={{
+            color: customization.headerColor,
+            borderColor: customization.accentColor,
+          }}
+        >
+          {customization.showIcons && <Award className={`${compact ? "w-5 h-5" : "w-6 h-6"} mr-2`} />}
+          Habilidades
+        </h2>
+        <div className={compact ? "space-y-2" : "space-y-3"}>
+          {skills.map((skill) => (
+            <div key={skill.id}>
+              {customization.showSkillBars ? (
+                <SkillBar skill={skill} />
+              ) : (
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium">{skill.name}</span>
+                  <span
+                    className={`${compact ? "text-xs" : "text-sm"} px-2 py-1 rounded`}
+                    style={{
+                      backgroundColor: `${customization.accentColor}20`,
+                      color: customization.accentColor,
+                      borderRadius: `${customization.borderRadius}px`,
+                    }}
+                  >
+                    {skill.level}
+                  </span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null
+
+  if (template === "custom") {
+    const spacingClass = {
+      compact: "space-y-4",
+      normal: "space-y-6",
+      spacious: "space-y-8",
+    }[customization.sectionSpacing]
+
+    const headerStyle =
+      customization.headerStyle === "gradient"
+        ? { background: `linear-gradient(135deg, ${customization.headerColor}, ${customization.accentColor})` }
+        : customization.headerStyle === "pattern"
+          ? {
+              backgroundColor: customization.headerColor,
+              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)`,
+              backgroundSize: "20px 20px",
+            }
+          : { backgroundColor: customization.headerColor }
+
+    // Layout Tradicional
+    if (customization.layout === "traditional") {
+      return (
+        <div
+          className="bg-white shadow-lg max-w-4xl mx-auto print:shadow-none print-preserve-bg"
+          style={{
+            fontFamily: customization.fontFamily,
+            color: customization.textColor,
+            backgroundColor: customization.backgroundColor,
+            borderRadius: `${customization.borderRadius}px`,
+          }}
+        >
+          <div className="text-white p-8 print-preserve-bg" style={headerStyle}>
+            <h1 className="text-4xl font-bold mb-2">{personalInfo.fullName || "Tu Nombre"}</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <PersonalInfoSection />
+            </div>
+          </div>
+
+          <div className={`p-8 ${spacingClass}`}>
+            <SummarySection />
+            <ExperienceSection />
+            <EducationSection />
+            <SkillsSection />
+          </div>
+        </div>
+      )
+    }
+
+    // Layout Sidebar
+    if (customization.layout === "sidebar") {
+      return (
+        <div
+          className="bg-white shadow-lg max-w-4xl mx-auto print:shadow-none print-preserve-bg flex"
+          style={{
+            fontFamily: customization.fontFamily,
+            color: customization.textColor,
+            backgroundColor: customization.backgroundColor,
+            borderRadius: `${customization.borderRadius}px`,
+            minHeight: "800px",
+          }}
+        >
+          {/* Sidebar */}
+          <div className="w-1/3 text-white p-6 print-preserve-bg" style={headerStyle}>
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold mb-4">{personalInfo.fullName || "Tu Nombre"}</h1>
+              <PersonalInfoSection compact />
+            </div>
+
+            {personalInfo.summary && (
+              <div className="mb-6">
+                <h2 className="text-lg font-bold mb-3 flex items-center">
+                  {customization.showIcons && <Award className="w-5 h-5 mr-2" />}
+                  Resumen
+                </h2>
+                <p className="text-sm leading-relaxed">{personalInfo.summary}</p>
+              </div>
+            )}
+
+            <div className="mb-6">
+              <h2 className="text-lg font-bold mb-3 flex items-center">
+                {customization.showIcons && <Award className="w-5 h-5 mr-2" />}
+                Habilidades
+              </h2>
+              <div className="space-y-2">
+                {skills.map((skill) => (
+                  <div key={skill.id}>
+                    {customization.showSkillBars ? (
+                      <div className="mb-3">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-medium text-sm">{skill.name}</span>
+                          <span className="text-xs opacity-75">{skill.level}</span>
+                        </div>
+                        <div className="w-full bg-white bg-opacity-30 rounded-full h-2">
+                          <div
+                            className="h-2 rounded-full bg-white transition-all duration-300"
+                            style={{ width: `${getSkillPercentage(skill.level)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium text-sm">{skill.name}</span>
+                        <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded">{skill.level}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className={`flex-1 p-8 ${spacingClass}`}>
+            <ExperienceSection />
+            <EducationSection />
+          </div>
+        </div>
+      )
+    }
+
+    // Layout Moderno
+    if (customization.layout === "modern") {
+      return (
+        <div
+          className="bg-white shadow-lg max-w-4xl mx-auto print:shadow-none print-preserve-bg"
+          style={{
+            fontFamily: customization.fontFamily,
+            color: customization.textColor,
+            backgroundColor: customization.backgroundColor,
+            borderRadius: `${customization.borderRadius}px`,
+          }}
+        >
+          <div className="text-white p-8 print-preserve-bg" style={headerStyle}>
+            <h1 className="text-4xl font-bold mb-2">{personalInfo.fullName || "Tu Nombre"}</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <PersonalInfoSection />
+            </div>
+          </div>
+
+          <div className={`p-8 ${spacingClass}`}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Columna Principal (2/3) */}
+              <div className="lg:col-span-2 space-y-6">
+                <ExperienceSection />
+                <EducationSection />
+              </div>
+
+              {/* Columna Lateral (1/3) */}
+              <div className="space-y-6">
+                <SummarySection compact />
+                <SkillsSection compact />
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  }
+
+  // Existing templates (modern, classic, creative) remain the same
   if (template === "modern") {
     return (
-      <div className="bg-white shadow-lg max-w-4xl mx-auto print:shadow-none">
-        <div className="bg-slate-800 text-white p-8">
+      <div className="bg-white shadow-lg max-w-4xl mx-auto print:shadow-none print-preserve-bg">
+        <div className="bg-slate-800 text-white p-8 print-preserve-bg">
           <h1 className="text-4xl font-bold mb-2">{personalInfo.fullName || "Tu Nombre"}</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
@@ -177,8 +598,8 @@ export default function CVTemplate({ template, data }: CVTemplateProps) {
 
   if (template === "creative") {
     return (
-      <div className="bg-white shadow-lg max-w-4xl mx-auto print:shadow-none">
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-8">
+      <div className="bg-white shadow-lg max-w-4xl mx-auto print:shadow-none print-preserve-bg">
+        <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-8 print-preserve-bg">
           <h1 className="text-4xl font-bold mb-4">{personalInfo.fullName || "Tu Nombre"}</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">

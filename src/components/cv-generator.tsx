@@ -8,9 +8,12 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Trash2, Download, Eye } from "lucide-react"
-import { type CVData, initialCVData, templates } from "@/lib/cv-data"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
+import { Plus, Trash2, Download, Eye, Palette, Layout } from "lucide-react"
+import { type CVData, initialCVData, templates, fontOptions, colorPresets, layoutOptions } from "@/lib/cv-data"
 import CVTemplate from "@/components/cv-template"
+import { printCV } from "@/components/print-utils"
 
 export default function CVGenerator() {
   const [cvData, setCvData] = useState<CVData>(initialCVData)
@@ -22,6 +25,24 @@ export default function CVGenerator() {
     setCvData((prev) => ({
       ...prev,
       personalInfo: { ...prev.personalInfo, [field]: value },
+    }))
+  }
+
+  const updateCustomization = (field: keyof typeof cvData.customization, value: any) => {
+    setCvData((prev) => ({
+      ...prev,
+      customization: { ...prev.customization, [field]: value },
+    }))
+  }
+
+  const applyColorPreset = (preset: (typeof colorPresets)[0]) => {
+    setCvData((prev) => ({
+      ...prev,
+      customization: {
+        ...prev.customization,
+        headerColor: preset.header,
+        accentColor: preset.accent,
+      },
     }))
   }
 
@@ -111,6 +132,10 @@ export default function CVGenerator() {
     }))
   }
 
+  const handlePrint = () => {
+    printCV(selectedTemplate, cvData)
+  }
+
   if (showPreview) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
@@ -121,7 +146,7 @@ export default function CVGenerator() {
               <Button onClick={() => setShowPreview(false)} variant="outline">
                 Volver a Editar
               </Button>
-              <Button onClick={() => window.print()}>
+              <Button onClick={handlePrint}>
                 <Download className="w-4 h-4 mr-2" />
                 Descargar PDF
               </Button>
@@ -143,11 +168,16 @@ export default function CVGenerator() {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="personal">Personal</TabsTrigger>
                 <TabsTrigger value="experience">Experiencia</TabsTrigger>
                 <TabsTrigger value="education">Educación</TabsTrigger>
                 <TabsTrigger value="skills">Habilidades</TabsTrigger>
+                {selectedTemplate === "custom" && (
+                  <TabsTrigger value="customization">
+                    <Palette className="w-4 h-4" />
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="personal" className="space-y-4">
@@ -408,6 +438,218 @@ export default function CVGenerator() {
                   </Card>
                 ))}
               </TabsContent>
+
+              {selectedTemplate === "custom" && (
+                <TabsContent value="customization" className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Personalización</h3>
+
+                    {/* Layout Selection */}
+                    <div className="mb-6">
+                      <Label className="text-base font-medium mb-3 block">
+                        <Layout className="w-4 h-4 inline mr-2" />
+                        Diseño del CV
+                      </Label>
+                      <div className="grid grid-cols-1 gap-3">
+                        {layoutOptions.map((layout) => (
+                          <div
+                            key={layout.id}
+                            className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                              cvData.customization.layout === layout.id
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-200 hover:border-gray-300"
+                            }`}
+                            onClick={() => updateCustomization("layout", layout.id)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-semibold">{layout.name}</h4>
+                                <p className="text-sm text-gray-600 mb-2">{layout.description}</p>
+                                <p className="text-xs text-gray-500 italic">{layout.preview}</p>
+                              </div>
+                              <div
+                                className={`w-4 h-4 rounded-full border-2 ${
+                                  cvData.customization.layout === layout.id
+                                    ? "border-blue-500 bg-blue-500"
+                                    : "border-gray-300"
+                                }`}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Color Presets */}
+                    <div className="mb-6">
+                      <Label className="text-base font-medium">Combinaciones de Colores</Label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                        {colorPresets.map((preset) => (
+                          <Button
+                            key={preset.name}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => applyColorPreset(preset)}
+                            className="justify-start"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.header }} />
+                              <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.accent }} />
+                              <span className="text-xs">{preset.name}</span>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Custom Colors */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <div>
+                        <Label htmlFor="headerColor">Color de Cabecera</Label>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            id="headerColor"
+                            type="color"
+                            value={cvData.customization.headerColor}
+                            onChange={(e) => updateCustomization("headerColor", e.target.value)}
+                            className="w-16 h-10"
+                          />
+                          <Input
+                            value={cvData.customization.headerColor}
+                            onChange={(e) => updateCustomization("headerColor", e.target.value)}
+                            placeholder="#1e293b"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="accentColor">Color de Acento</Label>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            id="accentColor"
+                            type="color"
+                            value={cvData.customization.accentColor}
+                            onChange={(e) => updateCustomization("accentColor", e.target.value)}
+                            className="w-16 h-10"
+                          />
+                          <Input
+                            value={cvData.customization.accentColor}
+                            onChange={(e) => updateCustomization("accentColor", e.target.value)}
+                            placeholder="#3b82f6"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Font Selection */}
+                    <div className="mb-6">
+                      <Label>Fuente</Label>
+                      <Select
+                        value={cvData.customization.fontFamily}
+                        onValueChange={(value) => updateCustomization("fontFamily", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {fontOptions.map((font) => (
+                            <SelectItem key={font.value} value={font.value}>
+                              {font.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Skills Display Options */}
+                    <div className="mb-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <Label>Mostrar Barras de Habilidades</Label>
+                        <Switch
+                          checked={cvData.customization.showSkillBars}
+                          onCheckedChange={(checked) => updateCustomization("showSkillBars", checked)}
+                        />
+                      </div>
+
+                      {cvData.customization.showSkillBars && (
+                        <div>
+                          <Label>Estilo de Habilidades</Label>
+                          <Select
+                            value={cvData.customization.skillBarStyle}
+                            onValueChange={(value) => updateCustomization("skillBarStyle", value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="bars">Barras</SelectItem>
+                              <SelectItem value="circles">Círculos</SelectItem>
+                              <SelectItem value="dots">Puntos</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Header Style */}
+                    <div className="mb-6">
+                      <Label>Estilo de Cabecera</Label>
+                      <Select
+                        value={cvData.customization.headerStyle}
+                        onValueChange={(value) => updateCustomization("headerStyle", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="solid">Sólido</SelectItem>
+                          <SelectItem value="gradient">Gradiente</SelectItem>
+                          <SelectItem value="pattern">Patrón</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Section Spacing */}
+                    <div className="mb-6">
+                      <Label>Espaciado de Secciones</Label>
+                      <Select
+                        value={cvData.customization.sectionSpacing}
+                        onValueChange={(value) => updateCustomization("sectionSpacing", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="compact">Compacto</SelectItem>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="spacious">Espacioso</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Border Radius */}
+                    <div className="mb-6">
+                      <Label>Redondez de Bordes: {cvData.customization.borderRadius}px</Label>
+                      <Slider
+                        value={[cvData.customization.borderRadius]}
+                        onValueChange={(value) => updateCustomization("borderRadius", value[0])}
+                        max={20}
+                        min={0}
+                        step={1}
+                        className="mt-2"
+                      />
+                    </div>
+
+                    {/* Show Icons */}
+                    <div className="flex items-center justify-between">
+                      <Label>Mostrar Iconos</Label>
+                      <Switch
+                        checked={cvData.customization.showIcons}
+                        onCheckedChange={(checked) => updateCustomization("showIcons", checked)}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+              )}
             </Tabs>
           </CardContent>
         </Card>
