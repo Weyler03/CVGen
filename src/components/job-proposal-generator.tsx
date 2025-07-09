@@ -194,7 +194,7 @@ export default function JobProposalGenerator() {
               <TabsContent value="basic" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="yourName">Tu Nombre/Empresa</Label>
+                    <Label htmlFor="yourName"className="mb-2">Tu Nombre/Empresa</Label>
                     <Input
                       id="yourName"
                       value={proposalData.basicInfo.yourName}
@@ -203,7 +203,7 @@ export default function JobProposalGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="clientName">Nombre del Cliente</Label>
+                    <Label htmlFor="clientName"className="mb-2">Nombre del Cliente</Label>
                     <Input
                       id="clientName"
                       value={proposalData.basicInfo.clientName}
@@ -212,7 +212,7 @@ export default function JobProposalGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="projectTitle">Título del Proyecto</Label>
+                    <Label htmlFor="projectTitle"className="mb-2">Título del Proyecto</Label>
                     <Input
                       id="projectTitle"
                       value={proposalData.basicInfo.projectTitle}
@@ -221,7 +221,7 @@ export default function JobProposalGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="date">Fecha</Label>
+                    <Label htmlFor="date"className="mb-2">Fecha</Label>
                     <Input
                       id="date"
                       type="date"
@@ -230,7 +230,7 @@ export default function JobProposalGenerator() {
                     />
                   </div>
                   <div className="col-span-2">
-                    <Label htmlFor="logo">Logo de la Empresa (opcional)</Label>
+                    <Label htmlFor="logo"className="mb-2">Logo de la Empresa (opcional)</Label>
                     <div className="space-y-4">
                       <Input
                         id="logo"
@@ -265,7 +265,7 @@ export default function JobProposalGenerator() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="introduction">Introducción</Label>
+                  <Label htmlFor="introduction"className="mb-2">Introducción</Label>
                   <Textarea
                     id="introduction"
                     value={proposalData.basicInfo.introduction}
@@ -278,7 +278,7 @@ export default function JobProposalGenerator() {
 
               <TabsContent value="scope" className="space-y-4">
                 <div>
-                  <Label htmlFor="description">Descripción del Proyecto</Label>
+                  <Label htmlFor="description"className="mb-2">Descripción del Proyecto</Label>
                   <Textarea
                     id="description"
                     value={proposalData.projectScope.description}
@@ -288,7 +288,7 @@ export default function JobProposalGenerator() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="objectives">Objetivos</Label>
+                  <Label htmlFor="objectives"className="mb-2">Objetivos</Label>
                   <Textarea
                     id="objectives"
                     value={proposalData.projectScope.objectives}
@@ -298,7 +298,7 @@ export default function JobProposalGenerator() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="requirements">Requisitos</Label>
+                  <Label htmlFor="requirements"className="mb-2">Requisitos</Label>
                   <Textarea
                     id="requirements"
                     value={proposalData.projectScope.requirements}
@@ -322,7 +322,7 @@ export default function JobProposalGenerator() {
                     <CardContent className="pt-6">
                       <div className="space-y-4">
                         <div>
-                          <Label>Nombre del Entregable</Label>
+                          <Label className="mb-2">Nombre del Entregable</Label>
                           <Input
                             value={deliverable.name}
                             onChange={(e) => updateDeliverable(deliverable.id, "name", e.target.value)}
@@ -330,7 +330,7 @@ export default function JobProposalGenerator() {
                           />
                         </div>
                         <div>
-                          <Label>Descripción</Label>
+                          <Label className="mb-2">Descripción</Label>
                           <Textarea
                             value={deliverable.description}
                             onChange={(e) => updateDeliverable(deliverable.id, "description", e.target.value)}
@@ -362,7 +362,7 @@ export default function JobProposalGenerator() {
                     <CardContent className="pt-6">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <Label>Nombre del Hito</Label>
+                          <Label className="mb-2">Nombre del Hito</Label>
                           <Input
                             value={milestone.name}
                             onChange={(e) => updateMilestone(milestone.id, "name", e.target.value)}
@@ -370,7 +370,7 @@ export default function JobProposalGenerator() {
                           />
                         </div>
                         <div>
-                          <Label>Fecha Límite</Label>
+                          <Label className="mb-2">Fecha Límite</Label>
                           <Input
                             type="date"
                             value={milestone.deadline}
@@ -378,7 +378,7 @@ export default function JobProposalGenerator() {
                           />
                         </div>
                         <div>
-                          <Label>Pago</Label>
+                          <Label className="mb-2">Pago</Label>
                           <Input
                             value={milestone.payment}
                             onChange={(e) => updateMilestone(milestone.id, "payment", e.target.value)}
@@ -399,7 +399,7 @@ export default function JobProposalGenerator() {
                   <h3 className="text-lg font-semibold mb-4">Precios</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="totalPrice">Precio Total</Label>
+                      <Label htmlFor="totalPrice"className="mb-2">Precio Total</Label>
                       <Input
                         id="totalPrice"
                         value={proposalData.pricing.totalPrice}
@@ -408,7 +408,7 @@ export default function JobProposalGenerator() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="paymentTerms">Términos de Pago</Label>
+                      <Label htmlFor="paymentTerms"className="mb-2">Términos de Pago</Label>
                       <Input
                         id="paymentTerms"
                         value={proposalData.pricing.paymentTerms}
@@ -418,7 +418,7 @@ export default function JobProposalGenerator() {
                     </div>
                   </div>
                   <div className="mt-4">
-                    <Label htmlFor="additionalNotes">Notas Adicionales</Label>
+                    <Label htmlFor="additionalNotes"className="mb-2">Notas Adicionales</Label>
                     <Textarea
                       id="additionalNotes"
                       value={proposalData.pricing.additionalNotes}

@@ -181,9 +181,9 @@ export default function CVGenerator() {
               </TabsList>
 
               <TabsContent value="personal" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="fullName">Nombre Completo</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+                  <div >
+                    <Label htmlFor="fullName" className="mb-2">Nombre Completo</Label>
                     <Input
                       id="fullName"
                       value={cvData.personalInfo.fullName}
@@ -192,7 +192,7 @@ export default function CVGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email"className="mb-2">Email</Label>
                     <Input
                       id="email"
                       type="email"
@@ -202,7 +202,7 @@ export default function CVGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="phone">Teléfono</Label>
+                    <Label htmlFor="phone"className="mb-2">Teléfono</Label>
                     <Input
                       id="phone"
                       value={cvData.personalInfo.phone}
@@ -211,7 +211,7 @@ export default function CVGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="address">Dirección</Label>
+                    <Label htmlFor="address"className="mb-2">Dirección</Label>
                     <Input
                       id="address"
                       value={cvData.personalInfo.address}
@@ -220,7 +220,7 @@ export default function CVGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="linkedin">LinkedIn</Label>
+                    <Label htmlFor="linkedin"className="mb-2">LinkedIn</Label>
                     <Input
                       id="linkedin"
                       value={cvData.personalInfo.linkedin}
@@ -229,7 +229,7 @@ export default function CVGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="website">Sitio Web</Label>
+                    <Label htmlFor="website"className="mb-2">Sitio Web</Label>
                     <Input
                       id="website"
                       value={cvData.personalInfo.website}
@@ -239,7 +239,7 @@ export default function CVGenerator() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="summary">Resumen Profesional</Label>
+                  <Label htmlFor="summary"className="mb-2">Resumen Profesional</Label>
                   <Textarea
                     id="summary"
                     value={cvData.personalInfo.summary}
@@ -250,7 +250,7 @@ export default function CVGenerator() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="experience" className="space-y-4">
+              <TabsContent value="experience" className="space-y-4 mb-2">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold">Experiencia Laboral</h3>
                   <Button onClick={addExperience} size="sm">

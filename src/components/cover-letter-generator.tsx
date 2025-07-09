@@ -96,7 +96,7 @@ export default function CoverLetterGenerator() {
               <TabsContent value="basic" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="fullName">Tu Nombre Completo</Label>
+                    <Label htmlFor="fullName"className="mb-2">Tu Nombre Completo</Label>
                     <Input
                       id="fullName"
                       value={coverLetterData.fullName}
@@ -105,7 +105,7 @@ export default function CoverLetterGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="position">Puesto al que Aplicas</Label>
+                    <Label htmlFor="position"className="mb-2">Puesto al que Aplicas</Label>
                     <Input
                       id="position"
                       value={coverLetterData.position}
@@ -114,7 +114,7 @@ export default function CoverLetterGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="company">Empresa</Label>
+                    <Label htmlFor="company"className="mb-2">Empresa</Label>
                     <Input
                       id="company"
                       value={coverLetterData.company}
@@ -123,7 +123,7 @@ export default function CoverLetterGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="hiringManager">Responsable de Contratación</Label>
+                    <Label htmlFor="hiringManager"className="mb-2">Responsable de Contratación</Label>
                     <Input
                       id="hiringManager"
                       value={coverLetterData.hiringManager}
@@ -132,7 +132,7 @@ export default function CoverLetterGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email">Tu Email</Label>
+                    <Label htmlFor="email"className="mb-2">Tu Email</Label>
                     <Input
                       id="email"
                       type="email"
@@ -142,7 +142,7 @@ export default function CoverLetterGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="phone">Tu Teléfono</Label>
+                    <Label htmlFor="phone"className="mb-2">Tu Teléfono</Label>
                     <Input
                       id="phone"
                       value={coverLetterData.phone}
@@ -151,7 +151,7 @@ export default function CoverLetterGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="date">Fecha</Label>
+                    <Label htmlFor="date"className="mb-2">Fecha</Label>
                     <Input
                       id="date"
                       type="date"
@@ -160,7 +160,7 @@ export default function CoverLetterGenerator() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="city">Ciudad</Label>
+                    <Label htmlFor="city"className="mb-2">Ciudad</Label>
                     <Input
                       id="city"
                       value={coverLetterData.city}
@@ -171,7 +171,7 @@ export default function CoverLetterGenerator() {
                 </div>
 
                 <div>
-                  <Label htmlFor="greeting">Saludo</Label>
+                  <Label htmlFor="greeting"className="mb-2">Saludo</Label>
                   <Input
                     id="greeting"
                     value={coverLetterData.greeting}
@@ -181,7 +181,7 @@ export default function CoverLetterGenerator() {
                 </div>
 
                 <div>
-                  <Label htmlFor="introduction">Introducción</Label>
+                  <Label htmlFor="introduction"className="mb-2">Introducción</Label>
                   <Textarea
                     id="introduction"
                     value={coverLetterData.introduction}
@@ -192,7 +192,7 @@ export default function CoverLetterGenerator() {
                 </div>
 
                 <div>
-                  <Label htmlFor="body">Cuerpo Principal</Label>
+                  <Label htmlFor="body"className="mb-2">Cuerpo Principal</Label>
                   <Textarea
                     id="body"
                     value={coverLetterData.body}
@@ -203,7 +203,7 @@ export default function CoverLetterGenerator() {
                 </div>
 
                 <div>
-                  <Label htmlFor="closing">Cierre</Label>
+                  <Label htmlFor="closing"className="mb-2">Cierre</Label>
                   <Textarea
                     id="closing"
                     value={coverLetterData.closing}
@@ -214,7 +214,7 @@ export default function CoverLetterGenerator() {
                 </div>
 
                 <div>
-                  <Label htmlFor="signature">Firma</Label>
+                  <Label htmlFor="signature"className="mb-2">Firma</Label>
                   <Input
                     id="signature"
                     value={coverLetterData.signature}
