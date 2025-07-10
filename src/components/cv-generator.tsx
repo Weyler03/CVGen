@@ -1,48 +1,56 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import type React from "react"
+
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
-import { Plus, Trash2, Download, Eye, Palette, Layout } from "lucide-react"
-import { type CVData, initialCVData, templates, fontOptions, colorPresets, layoutOptions } from "@/lib/cv-data"
-import CVTemplate from "@/components/cv-template"
-import { printCV } from "@/components/print-utils"
+import { Badge } from "@/components/ui/badge"
+// import { Separator } from "@/components/ui/separator"
+import {
+  Plus,
+  Trash2,
+  Download,
+  Upload,
+  Eye,
+  Palette,
+  Type,
+  Layout,
+  Settings,
+  User,
+  Briefcase,
+  GraduationCap,
+  Award,
+  ImageIcon,
+} from "lucide-react"
+import CVTemplate from "./cv-template"
+import { printCV } from "./print-utils"
+import { initialCVData, cvTemplates, layoutOptions, fontOptions, colorPresets, type CVData } from "@/lib/cv-data"
 
 export default function CVGenerator() {
-  const [cvData, setCvData] = useState<CVData>(initialCVData)
+  const [cvData, setCVData] = useState<CVData>(initialCVData)
   const [selectedTemplate, setSelectedTemplate] = useState("modern")
-  const [activeTab, setActiveTab] = useState("personal")
-  const [showPreview, setShowPreview] = useState(false)
+  const [activeTab, setActiveTab] = useState("basic")
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const updatePersonalInfo = (field: keyof typeof cvData.personalInfo, value: string) => {
-    setCvData((prev) => ({
+  const updateBasicInfo = (field: string, value: string) => {
+    setCVData((prev) => ({
       ...prev,
-      personalInfo: { ...prev.personalInfo, [field]: value },
+      basicInfo: { ...prev.basicInfo, [field]: value },
     }))
   }
 
-  const updateCustomization = (field: keyof typeof cvData.customization, value: any) => {
-    setCvData((prev) => ({
+  const updateCustomization = (field: string, value: any) => {
+    setCVData((prev) => ({
       ...prev,
       customization: { ...prev.customization, [field]: value },
-    }))
-  }
-
-  const applyColorPreset = (preset: (typeof colorPresets)[0]) => {
-    setCvData((prev) => ({
-      ...prev,
-      customization: {
-        ...prev.customization,
-        headerColor: preset.header,
-        accentColor: preset.accent,
-      },
     }))
   }
 
@@ -54,23 +62,22 @@ export default function CVGenerator() {
       startDate: "",
       endDate: "",
       description: "",
-      current: false,
     }
-    setCvData((prev) => ({
+    setCVData((prev) => ({
       ...prev,
       experience: [...prev.experience, newExp],
     }))
   }
 
-  const updateExperience = (id: string, field: string, value: string | boolean) => {
-    setCvData((prev) => ({
+  const updateExperience = (id: string, field: string, value: string) => {
+    setCVData((prev) => ({
       ...prev,
       experience: prev.experience.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)),
     }))
   }
 
   const removeExperience = (id: string) => {
-    setCvData((prev) => ({
+    setCVData((prev) => ({
       ...prev,
       experience: prev.experience.filter((exp) => exp.id !== id),
     }))
@@ -81,26 +88,25 @@ export default function CVGenerator() {
       id: Date.now().toString(),
       institution: "",
       degree: "",
-      field: "",
       startDate: "",
       endDate: "",
-      gpa: "",
+      description: "",
     }
-    setCvData((prev) => ({
+    setCVData((prev) => ({
       ...prev,
       education: [...prev.education, newEdu],
     }))
   }
 
   const updateEducation = (id: string, field: string, value: string) => {
-    setCvData((prev) => ({
+    setCVData((prev) => ({
       ...prev,
       education: prev.education.map((edu) => (edu.id === id ? { ...edu, [field]: value } : edu)),
     }))
   }
 
   const removeEducation = (id: string) => {
-    setCvData((prev) => ({
+    setCVData((prev) => ({
       ...prev,
       education: prev.education.filter((edu) => edu.id !== id),
     }))
@@ -110,580 +116,658 @@ export default function CVGenerator() {
     const newSkill = {
       id: Date.now().toString(),
       name: "",
-      level: "Intermedio",
+      level: 50,
     }
-    setCvData((prev) => ({
+    setCVData((prev) => ({
       ...prev,
       skills: [...prev.skills, newSkill],
     }))
   }
 
-  const updateSkill = (id: string, field: string, value: string) => {
-    setCvData((prev) => ({
+  const updateSkill = (id: string, field: string, value: string | number) => {
+    setCVData((prev) => ({
       ...prev,
       skills: prev.skills.map((skill) => (skill.id === id ? { ...skill, [field]: value } : skill)),
     }))
   }
 
   const removeSkill = (id: string) => {
-    setCvData((prev) => ({
+    setCVData((prev) => ({
       ...prev,
       skills: prev.skills.filter((skill) => skill.id !== id),
     }))
+  }
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        updateBasicInfo("photo", e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const applyColorPreset = (preset: (typeof colorPresets)[0]) => {
+    updateCustomization("headerColor", preset.header)
+    updateCustomization("accentColor", preset.accent)
   }
 
   const handlePrint = () => {
     printCV(selectedTemplate, cvData)
   }
 
-  if (showPreview) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Vista Previa del CV</h1>
-            <div className="flex gap-2">
-              <Button onClick={() => setShowPreview(false)} variant="outline">
-                Volver a Editar
-              </Button>
-              <Button onClick={handlePrint}>
+  return (
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Generador de CV Profesional</h1>
+          <p className="text-gray-600">Crea tu currículum perfecto con nuestras plantillas personalizables</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Editor Panel */}
+          <div className="space-y-6">
+            {/* Template Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Layout className="w-5 h-5" />
+                  Seleccionar Plantilla
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  {cvTemplates.map((template) => (
+                    <div
+                      key={template.id}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        selectedTemplate === template.id
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                      onClick={() => setSelectedTemplate(template.id)}
+                    >
+                      <h3 className="font-semibold">{template.name}</h3>
+                      <p className="text-sm text-gray-600">{template.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Layout Selection */}
+            {selectedTemplate === "custom" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Layout className="w-5 h-5" />
+                    Diseño de Layout
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {layoutOptions.map((layout) => (
+                      <div
+                        key={layout.id}
+                        className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                          cvData.customization.layout === layout.id
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                        onClick={() => updateCustomization("layout", layout.id)}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold">{layout.name}</h3>
+                          {cvData.customization.layout === layout.id && <Badge variant="default">Seleccionado</Badge>}
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">{layout.description}</p>
+                        <p className="text-xs text-gray-500 font-mono">{layout.preview}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Form Tabs */}
+            <Card>
+              <CardContent className="p-0">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="basic" className="flex items-center gap-1">
+                      <User className="w-4 h-4" />
+                      <span className="hidden sm:inline">Básico</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="experience" className="flex items-center gap-1">
+                      <Briefcase className="w-4 h-4" />
+                      <span className="hidden sm:inline">Experiencia</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="education" className="flex items-center gap-1">
+                      <GraduationCap className="w-4 h-4" />
+                      <span className="hidden sm:inline">Educación</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="skills" className="flex items-center gap-1">
+                      <Award className="w-4 h-4" />
+                      <span className="hidden sm:inline">Habilidades</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="design" className="flex items-center gap-1">
+                      <Palette className="w-4 h-4" />
+                      <span className="hidden sm:inline">Diseño</span>
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <div className="p-6">
+                    <TabsContent value="basic" className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="fullName">Nombre Completo</Label>
+                          <Input
+                            id="fullName"
+                            value={cvData.basicInfo.fullName}
+                            onChange={(e) => updateBasicInfo("fullName", e.target.value)}
+                            placeholder="Tu nombre completo"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="title">Título Profesional</Label>
+                          <Input
+                            id="title"
+                            value={cvData.basicInfo.title}
+                            onChange={(e) => updateBasicInfo("title", e.target.value)}
+                            placeholder="Ej: Desarrollador Full Stack"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={cvData.basicInfo.email}
+                            onChange={(e) => updateBasicInfo("email", e.target.value)}
+                            placeholder="tu@email.com"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="phone">Teléfono</Label>
+                          <Input
+                            id="phone"
+                            value={cvData.basicInfo.phone}
+                            onChange={(e) => updateBasicInfo("phone", e.target.value)}
+                            placeholder="+1 234 567 8900"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="location">Ubicación</Label>
+                          <Input
+                            id="location"
+                            value={cvData.basicInfo.location}
+                            onChange={(e) => updateBasicInfo("location", e.target.value)}
+                            placeholder="Ciudad, País"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="website">Sitio Web</Label>
+                          <Input
+                            id="website"
+                            value={cvData.basicInfo.website}
+                            onChange={(e) => updateBasicInfo("website", e.target.value)}
+                            placeholder="www.tusitio.com"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="photo">Foto de Perfil</Label>
+                        <div className="flex items-center gap-4 mt-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex items-center gap-2"
+                          >
+                            <ImageIcon className="w-4 h-4" />
+                            Subir Foto
+                          </Button>
+                          {cvData.basicInfo.photo && (
+                            <img
+                              src={cvData.basicInfo.photo || "/placeholder.svg"}
+                              alt="Preview"
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePhotoUpload}
+                          className="hidden"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="summary">Resumen Profesional</Label>
+                        <Textarea
+                          id="summary"
+                          value={cvData.basicInfo.summary}
+                          onChange={(e) => updateBasicInfo("summary", e.target.value)}
+                          placeholder="Describe brevemente tu experiencia y objetivos profesionales..."
+                          rows={4}
+                        />
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="experience" className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold">Experiencia Laboral</h3>
+                        <Button onClick={addExperience} size="sm">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Agregar
+                        </Button>
+                      </div>
+
+                      {cvData.experience.map((exp, index) => (
+                        <Card key={exp.id}>
+                          <CardHeader className="pb-3">
+                            <div className="flex justify-between items-center">
+                              <CardTitle className="text-base">Experiencia {index + 1}</CardTitle>
+                              <Button variant="ghost" size="sm" onClick={() => removeExperience(exp.id)}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label>Empresa</Label>
+                                <Input
+                                  value={exp.company}
+                                  onChange={(e) => updateExperience(exp.id, "company", e.target.value)}
+                                  placeholder="Nombre de la empresa"
+                                />
+                              </div>
+                              <div>
+                                <Label>Cargo</Label>
+                                <Input
+                                  value={exp.position}
+                                  onChange={(e) => updateExperience(exp.id, "position", e.target.value)}
+                                  placeholder="Tu cargo"
+                                />
+                              </div>
+                              <div>
+                                <Label>Fecha de Inicio</Label>
+                                <Input
+                                  type="date"
+                                  value={exp.startDate}
+                                  onChange={(e) => updateExperience(exp.id, "startDate", e.target.value)}
+                                  placeholder="Ej: Enero 2020"
+                                />
+                              </div>
+                              <div>
+                                <Label>Fecha de Fin</Label>
+                                <Input
+                                type="date"
+                                  value={exp.endDate}
+                                  onChange={(e) => updateExperience(exp.id, "endDate", e.target.value)}
+                                  placeholder="Ej: Presente"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label>Descripción</Label>
+                              <Textarea
+                                value={exp.description}
+                                onChange={(e) => updateExperience(exp.id, "description", e.target.value)}
+                                placeholder="Describe tus responsabilidades y logros..."
+                                rows={3}
+                              />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </TabsContent>
+
+                    <TabsContent value="education" className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold">Educación</h3>
+                        <Button onClick={addEducation} size="sm">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Agregar
+                        </Button>
+                      </div>
+
+                      {cvData.education.map((edu, index) => (
+                        <Card key={edu.id}>
+                          <CardHeader className="pb-3">
+                            <div className="flex justify-between items-center">
+                              <CardTitle className="text-base">Educación {index + 1}</CardTitle>
+                              <Button variant="ghost" size="sm" onClick={() => removeEducation(edu.id)}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label>Institución</Label>
+                                <Input
+                                  value={edu.institution}
+                                  onChange={(e) => updateEducation(edu.id, "institution", e.target.value)}
+                                  placeholder="Universidad o institución"
+                                />
+                              </div>
+                              <div>
+                                <Label>Título</Label>
+                                <Input
+                                  value={edu.degree}
+                                  onChange={(e) => updateEducation(edu.id, "degree", e.target.value)}
+                                  placeholder="Título obtenido"
+                                />
+                              </div>
+                              <div>
+                                <Label>Fecha de Inicio</Label>
+                                <Input
+                                  value={edu.startDate}
+                                  onChange={(e) => updateEducation(edu.id, "startDate", e.target.value)}
+                                  placeholder="Ej: 2016"
+                                />
+                              </div>
+                              <div>
+                                <Label>Fecha de Fin</Label>
+                                <Input
+                                  value={edu.endDate}
+                                  onChange={(e) => updateEducation(edu.id, "endDate", e.target.value)}
+                                  placeholder="Ej: 2020"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label>Descripción</Label>
+                              <Textarea
+                                value={edu.description}
+                                onChange={(e) => updateEducation(edu.id, "description", e.target.value)}
+                                placeholder="Menciones, proyectos destacados, etc."
+                                rows={2}
+                              />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </TabsContent>
+
+                    <TabsContent value="skills" className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold">Habilidades</h3>
+                        <Button onClick={addSkill} size="sm">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Agregar
+                        </Button>
+                      </div>
+
+                      {cvData.skills.map((skill, index) => (
+                        <Card key={skill.id}>
+                          <CardContent className="pt-6">
+                            <div className="flex items-center gap-4">
+                              <div className="flex-1">
+                                <Label>Habilidad</Label>
+                                <Input
+                                  value={skill.name}
+                                  onChange={(e) => updateSkill(skill.id, "name", e.target.value)}
+                                  placeholder="Ej: JavaScript, Photoshop, etc."
+                                />
+                              </div>
+                              <div className="w-32">
+                                <Label>Nivel ({skill.level}%)</Label>
+                                <Slider
+                                  value={[skill.level]}
+                                  onValueChange={(value) => updateSkill(skill.id, "level", value[0])}
+                                  max={100}
+                                  step={5}
+                                  className="mt-2"
+                                />
+                              </div>
+                              <Button variant="ghost" size="sm" onClick={() => removeSkill(skill.id)}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </TabsContent>
+
+                    <TabsContent value="design" className="space-y-6">
+                      {selectedTemplate === "custom" && (
+                        <>
+                          {/* Color Presets */}
+                          <div>
+                            <Label className="text-base font-semibold">Combinaciones de Colores</Label>
+                            <div className="grid grid-cols-2 gap-3 mt-3">
+                              {colorPresets.map((preset, index) => (
+                                <Button
+                                  key={index}
+                                  variant="outline"
+                                  className="h-auto p-3 justify-start bg-transparent"
+                                  onClick={() => applyColorPreset(preset)}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="flex gap-1">
+                                      <div
+                                        className="w-4 h-4 rounded-full"
+                                        style={{ backgroundColor: preset.header }}
+                                      />
+                                      <div
+                                        className="w-4 h-4 rounded-full"
+                                        style={{ backgroundColor: preset.accent }}
+                                      />
+                                    </div>
+                                    <span className="text-sm">{preset.name}</span>
+                                  </div>
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* <Separator /> */}
+
+                          {/* Custom Colors */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                              <Label htmlFor="headerColor">Color de Encabezado</Label>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Input
+                                  id="headerColor"
+                                  type="color"
+                                  value={cvData.customization.headerColor}
+                                  onChange={(e) => updateCustomization("headerColor", e.target.value)}
+                                  className="w-16 h-10 p-1 border rounded"
+                                />
+                                <Input
+                                  value={cvData.customization.headerColor}
+                                  onChange={(e) => updateCustomization("headerColor", e.target.value)}
+                                  placeholder="#1e293b"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label htmlFor="accentColor">Color de Acento</Label>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Input
+                                  id="accentColor"
+                                  type="color"
+                                  value={cvData.customization.accentColor}
+                                  onChange={(e) => updateCustomization("accentColor", e.target.value)}
+                                  className="w-16 h-10 p-1 border rounded"
+                                />
+                                <Input
+                                  value={cvData.customization.accentColor}
+                                  onChange={(e) => updateCustomization("accentColor", e.target.value)}
+                                  placeholder="#3b82f6"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label htmlFor="textColor">Color de Texto</Label>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Input
+                                  id="textColor"
+                                  type="color"
+                                  value={cvData.customization.textColor}
+                                  onChange={(e) => updateCustomization("textColor", e.target.value)}
+                                  className="w-16 h-10 p-1 border rounded"
+                                />
+                                <Input
+                                  value={cvData.customization.textColor}
+                                  onChange={(e) => updateCustomization("textColor", e.target.value)}
+                                  placeholder="#374151"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label htmlFor="backgroundColor">Color de Fondo</Label>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Input
+                                  id="backgroundColor"
+                                  type="color"
+                                  value={cvData.customization.backgroundColor}
+                                  onChange={(e) => updateCustomization("backgroundColor", e.target.value)}
+                                  className="w-16 h-10 p-1 border rounded"
+                                />
+                                <Input
+                                  value={cvData.customization.backgroundColor}
+                                  onChange={(e) => updateCustomization("backgroundColor", e.target.value)}
+                                  placeholder="#ffffff"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* <Separator /> */}
+
+                          {/* Typography */}
+                          <div>
+                            <Label className="text-base font-semibold flex items-center gap-2">
+                              <Type className="w-4 h-4" />
+                              Tipografía
+                            </Label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                              <div>
+                                <Label htmlFor="fontFamily">Fuente</Label>
+                                <Select
+                                  value={cvData.customization.fontFamily}
+                                  onValueChange={(value) => updateCustomization("fontFamily", value)}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {fontOptions.map((font) => (
+                                      <SelectItem key={font.value} value={font.value}>
+                                        {font.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <Label htmlFor="headerStyle">Estilo de Encabezado</Label>
+                                <Select
+                                  value={cvData.customization.headerStyle}
+                                  onValueChange={(value) => updateCustomization("headerStyle", value)}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="solid">Sólido</SelectItem>
+                                    <SelectItem value="gradient">Degradado</SelectItem>
+                                    <SelectItem value="pattern">Patrón</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* <Separator /> */}
+
+                          {/* Layout Options */}
+                          <div>
+                            <Label className="text-base font-semibold flex items-center gap-2">
+                              <Settings className="w-4 h-4" />
+                              Opciones de Diseño
+                            </Label>
+                            <div className="space-y-4 mt-3">
+                              <div>
+                                <Label htmlFor="borderRadius">
+                                  Radio de Bordes ({cvData.customization.borderRadius}px)
+                                </Label>
+                                <Slider
+                                  value={[cvData.customization.borderRadius]}
+                                  onValueChange={(value) => updateCustomization("borderRadius", value[0])}
+                                  max={20}
+                                  step={1}
+                                  className="mt-2"
+                                />
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor="showIcons">Mostrar Iconos</Label>
+                                <Switch
+                                  id="showIcons"
+                                  checked={cvData.customization.showIcons}
+                                  onCheckedChange={(checked) => updateCustomization("showIcons", checked)}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {selectedTemplate !== "custom" && (
+                        <div className="text-center py-8">
+                          <p className="text-gray-500">
+                            Las opciones de diseño están disponibles solo para la plantilla personalizada. Selecciona
+                            "Personalizado" para acceder a todas las opciones de personalización.
+                          </p>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </div>
+                </Tabs>
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4">
+              <Button onClick={handlePrint} className="flex-1">
                 <Download className="w-4 h-4 mr-2" />
-                Descargar PDF
+                Imprimir CV
+              </Button>
+              <Button variant="outline" className="flex-1 bg-transparent">
+                <Upload className="w-4 h-4 mr-2" />
+                Guardar
               </Button>
             </div>
           </div>
-          <CVTemplate template={selectedTemplate} data={cvData} />
-        </div>
-      </div>
-    )
-  }
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Formulario */}
-      <div className="lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Información del CV</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="personal">Personal</TabsTrigger>
-                <TabsTrigger value="experience">Experiencia</TabsTrigger>
-                <TabsTrigger value="education">Educación</TabsTrigger>
-                <TabsTrigger value="skills">Habilidades</TabsTrigger>
-                {selectedTemplate === "custom" && (
-                  <TabsTrigger value="customization">
-                    <Palette className="w-4 h-4" />
-                  </TabsTrigger>
-                )}
-              </TabsList>
-
-              <TabsContent value="personal" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
-                  <div >
-                    <Label htmlFor="fullName" className="mb-2">Nombre Completo</Label>
-                    <Input
-                      id="fullName"
-                      value={cvData.personalInfo.fullName}
-                      onChange={(e) => updatePersonalInfo("fullName", e.target.value)}
-                      placeholder="Juan Pérez"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email"className="mb-2">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={cvData.personalInfo.email}
-                      onChange={(e) => updatePersonalInfo("email", e.target.value)}
-                      placeholder="juan@email.com"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone"className="mb-2">Teléfono</Label>
-                    <Input
-                      id="phone"
-                      value={cvData.personalInfo.phone}
-                      onChange={(e) => updatePersonalInfo("phone", e.target.value)}
-                      placeholder="+1 234 567 8900"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="address"className="mb-2">Dirección</Label>
-                    <Input
-                      id="address"
-                      value={cvData.personalInfo.address}
-                      onChange={(e) => updatePersonalInfo("address", e.target.value)}
-                      placeholder="Ciudad, País"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="linkedin"className="mb-2">LinkedIn</Label>
-                    <Input
-                      id="linkedin"
-                      value={cvData.personalInfo.linkedin}
-                      onChange={(e) => updatePersonalInfo("linkedin", e.target.value)}
-                      placeholder="linkedin.com/in/usuario"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="website"className="mb-2">Sitio Web</Label>
-                    <Input
-                      id="website"
-                      value={cvData.personalInfo.website}
-                      onChange={(e) => updatePersonalInfo("website", e.target.value)}
-                      placeholder="www.miweb.com"
-                    />
+          {/* Preview Panel */}
+          <div className="lg:sticky lg:top-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="w-5 h-5" />
+                  Vista Previa
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="border rounded-lg overflow-hidden bg-white">
+                  <div className="transform scale-50 origin-top-left w-[200%] h-[200%] overflow-hidden">
+                    <CVTemplate template={selectedTemplate} data={cvData} />
                   </div>
                 </div>
-                <div>
-                  <Label htmlFor="summary"className="mb-2">Resumen Profesional</Label>
-                  <Textarea
-                    id="summary"
-                    value={cvData.personalInfo.summary}
-                    onChange={(e) => updatePersonalInfo("summary", e.target.value)}
-                    placeholder="Breve descripción de tu perfil profesional..."
-                    rows={4}
-                  />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="experience" className="space-y-4 mb-2">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Experiencia Laboral</h3>
-                  <Button onClick={addExperience} size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar
-                  </Button>
-                </div>
-                {cvData.experience.map((exp) => (
-                  <Card key={exp.id}>
-                    <CardContent className="pt-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <Label>Empresa</Label>
-                          <Input
-                            value={exp.company}
-                            onChange={(e) => updateExperience(exp.id, "company", e.target.value)}
-                            placeholder="Nombre de la empresa"
-                          />
-                        </div>
-                        <div>
-                          <Label>Cargo</Label>
-                          <Input
-                            value={exp.position}
-                            onChange={(e) => updateExperience(exp.id, "position", e.target.value)}
-                            placeholder="Tu posición"
-                          />
-                        </div>
-                        <div>
-                          <Label>Fecha de Inicio</Label>
-                          <Input
-                            type="month"
-                            value={exp.startDate}
-                            onChange={(e) => updateExperience(exp.id, "startDate", e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <Label>Fecha de Fin</Label>
-                          <Input
-                            type="month"
-                            value={exp.endDate}
-                            onChange={(e) => updateExperience(exp.id, "endDate", e.target.value)}
-                            disabled={exp.current}
-                          />
-                        </div>
-                      </div>
-                      <div className="mb-4">
-                        <Label>Descripción</Label>
-                        <Textarea
-                          value={exp.description}
-                          onChange={(e) => updateExperience(exp.id, "description", e.target.value)}
-                          placeholder="Describe tus responsabilidades y logros..."
-                          rows={3}
-                        />
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <label className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={exp.current}
-                            onChange={(e) => updateExperience(exp.id, "current", e.target.checked)}
-                          />
-                          <span>Trabajo actual</span>
-                        </label>
-                        <Button onClick={() => removeExperience(exp.id)} variant="destructive" size="sm">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </TabsContent>
-
-              <TabsContent value="education" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Educación</h3>
-                  <Button onClick={addEducation} size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar
-                  </Button>
-                </div>
-                {cvData.education.map((edu) => (
-                  <Card key={edu.id}>
-                    <CardContent className="pt-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <Label>Institución</Label>
-                          <Input
-                            value={edu.institution}
-                            onChange={(e) => updateEducation(edu.id, "institution", e.target.value)}
-                            placeholder="Universidad o instituto"
-                          />
-                        </div>
-                        <div>
-                          <Label>Título</Label>
-                          <Input
-                            value={edu.degree}
-                            onChange={(e) => updateEducation(edu.id, "degree", e.target.value)}
-                            placeholder="Licenciatura, Maestría, etc."
-                          />
-                        </div>
-                        <div>
-                          <Label>Campo de Estudio</Label>
-                          <Input
-                            value={edu.field}
-                            onChange={(e) => updateEducation(edu.id, "field", e.target.value)}
-                            placeholder="Ingeniería, Administración, etc."
-                          />
-                        </div>
-                        <div>
-                          <Label>Promedio (opcional)</Label>
-                          <Input
-                            value={edu.gpa || ""}
-                            onChange={(e) => updateEducation(edu.id, "gpa", e.target.value)}
-                            placeholder="9.5, 4.0, etc."
-                          />
-                        </div>
-                        <div>
-                          <Label>Fecha de Inicio</Label>
-                          <Input
-                            type="month"
-                            value={edu.startDate}
-                            onChange={(e) => updateEducation(edu.id, "startDate", e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <Label>Fecha de Graduación</Label>
-                          <Input
-                            type="month"
-                            value={edu.endDate}
-                            onChange={(e) => updateEducation(edu.id, "endDate", e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-end">
-                        <Button onClick={() => removeEducation(edu.id)} variant="destructive" size="sm">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </TabsContent>
-
-              <TabsContent value="skills" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Habilidades</h3>
-                  <Button onClick={addSkill} size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar
-                  </Button>
-                </div>
-                {cvData.skills.map((skill) => (
-                  <Card key={skill.id}>
-                    <CardContent className="pt-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label>Habilidad</Label>
-                          <Input
-                            value={skill.name}
-                            onChange={(e) => updateSkill(skill.id, "name", e.target.value)}
-                            placeholder="JavaScript, Photoshop, etc."
-                          />
-                        </div>
-                        <div>
-                          <Label>Nivel</Label>
-                          <Select value={skill.level} onValueChange={(value) => updateSkill(skill.id, "level", value)}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Básico">Básico</SelectItem>
-                              <SelectItem value="Intermedio">Intermedio</SelectItem>
-                              <SelectItem value="Avanzado">Avanzado</SelectItem>
-                              <SelectItem value="Experto">Experto</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div className="flex justify-end mt-4">
-                        <Button onClick={() => removeSkill(skill.id)} variant="destructive" size="sm">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </TabsContent>
-
-              {selectedTemplate === "custom" && (
-                <TabsContent value="customization" className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Personalización</h3>
-
-                    {/* Layout Selection */}
-                    <div className="mb-6">
-                      <Label className="text-base font-medium mb-3 block">
-                        <Layout className="w-4 h-4 inline mr-2" />
-                        Diseño del CV
-                      </Label>
-                      <div className="grid grid-cols-1 gap-3">
-                        {layoutOptions.map((layout) => (
-                          <div
-                            key={layout.id}
-                            className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                              cvData.customization.layout === layout.id
-                                ? "border-blue-500 bg-blue-50"
-                                : "border-gray-200 hover:border-gray-300"
-                            }`}
-                            onClick={() => updateCustomization("layout", layout.id)}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="font-semibold">{layout.name}</h4>
-                                <p className="text-sm text-gray-600 mb-2">{layout.description}</p>
-                                <p className="text-xs text-gray-500 italic">{layout.preview}</p>
-                              </div>
-                              <div
-                                className={`w-4 h-4 rounded-full border-2 ${
-                                  cvData.customization.layout === layout.id
-                                    ? "border-blue-500 bg-blue-500"
-                                    : "border-gray-300"
-                                }`}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Color Presets */}
-                    <div className="mb-6">
-                      <Label className="text-base font-medium">Combinaciones de Colores</Label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                        {colorPresets.map((preset) => (
-                          <Button
-                            key={preset.name}
-                            variant="outline"
-                            size="sm"
-                            onClick={() => applyColorPreset(preset)}
-                            className="justify-start"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.header }} />
-                              <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.accent }} />
-                              <span className="text-xs">{preset.name}</span>
-                            </div>
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Custom Colors */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                      <div>
-                        <Label htmlFor="headerColor">Color de Cabecera</Label>
-                        <div className="flex items-center space-x-2">
-                          <Input
-                            id="headerColor"
-                            type="color"
-                            value={cvData.customization.headerColor}
-                            onChange={(e) => updateCustomization("headerColor", e.target.value)}
-                            className="w-16 h-10"
-                          />
-                          <Input
-                            value={cvData.customization.headerColor}
-                            onChange={(e) => updateCustomization("headerColor", e.target.value)}
-                            placeholder="#1e293b"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="accentColor">Color de Acento</Label>
-                        <div className="flex items-center space-x-2">
-                          <Input
-                            id="accentColor"
-                            type="color"
-                            value={cvData.customization.accentColor}
-                            onChange={(e) => updateCustomization("accentColor", e.target.value)}
-                            className="w-16 h-10"
-                          />
-                          <Input
-                            value={cvData.customization.accentColor}
-                            onChange={(e) => updateCustomization("accentColor", e.target.value)}
-                            placeholder="#3b82f6"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Font Selection */}
-                    <div className="mb-6">
-                      <Label>Fuente</Label>
-                      <Select
-                        value={cvData.customization.fontFamily}
-                        onValueChange={(value) => updateCustomization("fontFamily", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {fontOptions.map((font) => (
-                            <SelectItem key={font.value} value={font.value}>
-                              {font.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Skills Display Options */}
-                    <div className="mb-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <Label>Mostrar Barras de Habilidades</Label>
-                        <Switch
-                          checked={cvData.customization.showSkillBars}
-                          onCheckedChange={(checked) => updateCustomization("showSkillBars", checked)}
-                        />
-                      </div>
-
-                      {cvData.customization.showSkillBars && (
-                        <div>
-                          <Label>Estilo de Habilidades</Label>
-                          <Select
-                            value={cvData.customization.skillBarStyle}
-                            onValueChange={(value) => updateCustomization("skillBarStyle", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="bars">Barras</SelectItem>
-                              <SelectItem value="circles">Círculos</SelectItem>
-                              <SelectItem value="dots">Puntos</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Header Style */}
-                    <div className="mb-6">
-                      <Label>Estilo de Cabecera</Label>
-                      <Select
-                        value={cvData.customization.headerStyle}
-                        onValueChange={(value) => updateCustomization("headerStyle", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="solid">Sólido</SelectItem>
-                          <SelectItem value="gradient">Gradiente</SelectItem>
-                          <SelectItem value="pattern">Patrón</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Section Spacing */}
-                    <div className="mb-6">
-                      <Label>Espaciado de Secciones</Label>
-                      <Select
-                        value={cvData.customization.sectionSpacing}
-                        onValueChange={(value) => updateCustomization("sectionSpacing", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="compact">Compacto</SelectItem>
-                          <SelectItem value="normal">Normal</SelectItem>
-                          <SelectItem value="spacious">Espacioso</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Border Radius */}
-                    <div className="mb-6">
-                      <Label>Redondez de Bordes: {cvData.customization.borderRadius}px</Label>
-                      <Slider
-                        value={[cvData.customization.borderRadius]}
-                        onValueChange={(value) => updateCustomization("borderRadius", value[0])}
-                        max={20}
-                        min={0}
-                        step={1}
-                        className="mt-2"
-                      />
-                    </div>
-
-                    {/* Show Icons */}
-                    <div className="flex items-center justify-between">
-                      <Label>Mostrar Iconos</Label>
-                      <Switch
-                        checked={cvData.customization.showIcons}
-                        onCheckedChange={(checked) => updateCustomization("showIcons", checked)}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-              )}
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Selector de Plantillas */}
-      <div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Plantillas</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {templates.map((template) => (
-              <div
-                key={template.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                  selectedTemplate === template.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-                onClick={() => setSelectedTemplate(template.id)}
-              >
-                <h3 className="font-semibold">{template.name}</h3>
-                <p className="text-sm text-gray-600">{template.description}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <div className="mt-6">
-          <Button onClick={() => setShowPreview(true)} className="w-full">
-            <Eye className="w-4 h-4 mr-2" />
-            Vista Previa
-          </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

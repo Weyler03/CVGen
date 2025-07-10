@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,34 +10,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
-import { Plus, Trash2, Download, Eye, Palette } from "lucide-react"
-import { type JobProposalData, initialJobProposalData, proposalTemplates } from "@/lib/job-proposal-data"
+import { Download, Eye, Palette, X } from "lucide-react"
+import { type CoverLetterData, initialCoverLetterData, coverLetterTemplates } from "@/lib/cover-letter-data"
 import { fontOptions, colorPresets } from "@/lib/cv-data"
-import JobProposalTemplate from "@/components/job-proposal-template"
-import { printJobProposal } from "@/components/print-utils"
+import CoverLetterTemplate from "@/components/cover-letter-template"
+import { printCoverLetter } from "@/components/print-utils"
 
-export default function JobProposalGenerator() {
-  const [proposalData, setProposalData] = useState<JobProposalData>(initialJobProposalData)
-  const [selectedTemplate, setSelectedTemplate] = useState("standard")
+export default function CoverLetterGenerator() {
+  const [coverLetterData, setCoverLetterData] = useState<CoverLetterData>(initialCoverLetterData)
+  const [selectedTemplate, setSelectedTemplate] = useState("professional")
   const [activeTab, setActiveTab] = useState("basic")
   const [showPreview, setShowPreview] = useState(false)
 
-  const updateBasicInfo = (field: keyof typeof proposalData.basicInfo, value: string) => {
-    setProposalData((prev) => ({
+  const updateField = (field: keyof Omit<CoverLetterData, "customization">, value: string) => {
+    setCoverLetterData((prev) => ({
       ...prev,
-      basicInfo: { ...prev.basicInfo, [field]: value },
+      [field]: value,
     }))
   }
 
-  const updateCustomization = (field: keyof typeof proposalData.customization, value: any) => {
-    setProposalData((prev) => ({
+  const updateCustomization = (field: keyof typeof coverLetterData.customization, value: any) => {
+    setCoverLetterData((prev) => ({
       ...prev,
       customization: { ...prev.customization, [field]: value },
     }))
   }
 
   const applyColorPreset = (preset: (typeof colorPresets)[0]) => {
-    setProposalData((prev) => ({
+    setCoverLetterData((prev) => ({
       ...prev,
       customization: {
         ...prev.customization,
@@ -48,585 +47,677 @@ export default function JobProposalGenerator() {
     }))
   }
 
-  const updateProjectScope = (field: keyof typeof proposalData.projectScope, value: string) => {
-    setProposalData((prev) => ({
-      ...prev,
-      projectScope: { ...prev.projectScope, [field]: value },
-    }))
-  }
-
-  const addDeliverable = () => {
-    const newDeliverable = {
-      id: Date.now().toString(),
-      name: "",
-      description: "",
-    }
-    setProposalData((prev) => ({
-      ...prev,
-      deliverables: [...prev.deliverables, newDeliverable],
-    }))
-  }
-
-  const updateDeliverable = (id: string, field: string, value: string) => {
-    setProposalData((prev) => ({
-      ...prev,
-      deliverables: prev.deliverables.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
-    }))
-  }
-
-  const removeDeliverable = (id: string) => {
-    setProposalData((prev) => ({
-      ...prev,
-      deliverables: prev.deliverables.filter((item) => item.id !== id),
-    }))
-  }
-
-  const addMilestone = () => {
-    const newMilestone = {
-      id: Date.now().toString(),
-      name: "",
-      deadline: "",
-      payment: "",
-    }
-    setProposalData((prev) => ({
-      ...prev,
-      timeline: [...prev.timeline, newMilestone],
-    }))
-  }
-
-  const updateMilestone = (id: string, field: string, value: string) => {
-    setProposalData((prev) => ({
-      ...prev,
-      timeline: prev.timeline.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
-    }))
-  }
-
-  const removeMilestone = (id: string) => {
-    setProposalData((prev) => ({
-      ...prev,
-      timeline: prev.timeline.filter((item) => item.id !== id),
-    }))
-  }
-
-  const updatePricing = (field: keyof typeof proposalData.pricing, value: string) => {
-    setProposalData((prev) => ({
-      ...prev,
-      pricing: { ...prev.pricing, [field]: value },
-    }))
-  }
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      // Check file size (2MB limit)
-      if (file.size > 2 * 1024 * 1024) {
-        alert("El archivo es demasiado grande. El tamaño máximo es 2MB.")
-        return
-      }
-
-      // Check file type
-      if (!file.type.startsWith("image/")) {
-        alert("Por favor selecciona un archivo de imagen válido.")
-        return
-      }
-
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        const result = event.target?.result as string
-        updateBasicInfo("logo", result)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const removeLogo = () => {
-    updateBasicInfo("logo", "")
-  }
-
   const handlePrint = () => {
-    printJobProposal(selectedTemplate, proposalData)
+    printCoverLetter(selectedTemplate, coverLetterData)
   }
+
+  const tabItems = [
+    { id: "basic", label: "Información", shortLabel: "Info" },
+    ...(selectedTemplate === "custom" ? [{ id: "customization", label: "Personalizar", shortLabel: "Style" }] : []),
+  ]
 
   if (showPreview) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Vista Previa de la Propuesta</h1>
-            <div className="flex gap-2">
-              <Button onClick={() => setShowPreview(false)} variant="outline">
-                Volver a Editar
-              </Button>
-              <Button onClick={handlePrint}>
-                <Download className="w-4 h-4 mr-2" />
-                Descargar PDF
-              </Button>
+      <div className="min-h-screen bg-gray-50">
+        <div className="sticky top-0 z-40 bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-3 sm:py-4">
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold">Vista Previa de la Carta</h1>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowPreview(false)}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs sm:text-sm"
+                >
+                  <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Volver a Editar</span>
+                  <span className="sm:hidden">Editar</span>
+                </Button>
+                <Button onClick={handlePrint} size="sm" className="text-xs sm:text-sm">
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Descargar PDF</span>
+                  <span className="sm:hidden">PDF</span>
+                </Button>
+              </div>
             </div>
           </div>
-          <JobProposalTemplate template={selectedTemplate} data={proposalData} />
+        </div>
+        <div className="max-w-5xl mx-auto p-4 sm:p-6">
+          <CoverLetterTemplate template={selectedTemplate} data={coverLetterData} />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Formulario */}
-      <div className="lg:col-span-2">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Mobile Template Selector */}
+      <div className="lg:hidden">
         <Card>
-          <CardHeader>
-            <CardTitle>Propuesta de Empleo</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Plantilla Seleccionada</CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="basic">Información Básica</TabsTrigger>
-                <TabsTrigger value="scope">Alcance del Proyecto</TabsTrigger>
-                <TabsTrigger value="deliverables">Entregables</TabsTrigger>
-                <TabsTrigger value="timeline">Cronograma y Precio</TabsTrigger>
-                {selectedTemplate === "custom" && (
-                  <TabsTrigger value="customization">
-                    <Palette className="w-4 h-4" />
-                  </TabsTrigger>
-                )}
-              </TabsList>
+            <div className="grid grid-cols-2 gap-3">
+              {coverLetterTemplates.map((template) => (
+                <div
+                  key={template.id}
+                  className={`p-3 border rounded-lg cursor-pointer transition-colors text-center ${
+                    selectedTemplate === template.id
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setSelectedTemplate(template.id)}
+                >
+                  <h3 className="font-semibold text-sm">{template.name}</h3>
+                  <p className="text-xs text-gray-600 mt-1">{template.description}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-              <TabsContent value="basic" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="yourName"className="mb-2">Tu Nombre/Empresa</Label>
-                    <Input
-                      id="yourName"
-                      value={proposalData.basicInfo.yourName}
-                      onChange={(e) => updateBasicInfo("yourName", e.target.value)}
-                      placeholder="Tu nombre o nombre de tu empresa"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="clientName"className="mb-2">Nombre del Cliente</Label>
-                    <Input
-                      id="clientName"
-                      value={proposalData.basicInfo.clientName}
-                      onChange={(e) => updateBasicInfo("clientName", e.target.value)}
-                      placeholder="Nombre del cliente o empresa"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="projectTitle"className="mb-2">Título del Proyecto</Label>
-                    <Input
-                      id="projectTitle"
-                      value={proposalData.basicInfo.projectTitle}
-                      onChange={(e) => updateBasicInfo("projectTitle", e.target.value)}
-                      placeholder="Ej: Desarrollo de Sitio Web E-commerce"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="date"className="mb-2">Fecha</Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      value={proposalData.basicInfo.date}
-                      onChange={(e) => updateBasicInfo("date", e.target.value)}
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Label htmlFor="logo"className="mb-2">Logo de la Empresa (opcional)</Label>
-                    <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+        {/* Form Section */}
+        <div className="lg:col-span-3">
+          <Card>
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg sm:text-xl">Carta de Presentación</CardTitle>
+                <Button onClick={() => setShowPreview(true)} className="lg:hidden" size="sm">
+                  <Eye className="w-4 h-4 mr-2" />
+                  Vista Previa
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Mobile Tabs */}
+              <div className="sm:hidden mb-4">
+                <div className="flex overflow-x-auto space-x-1 pb-2">
+                  {tabItems.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex-shrink-0 px-3 py-2 text-xs font-medium rounded-md transition-colors ${
+                        activeTab === tab.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {tab.shortLabel}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Desktop/Tablet Tabs */}
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="hidden sm:block">
+                <TabsList
+                  className={`grid w-full ${selectedTemplate === "custom" ? "grid-cols-2" : "grid-cols-1"} h-auto`}
+                >
+                  {tabItems.map((tab) => (
+                    <TabsTrigger key={tab.id} value={tab.id} className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+                      {tab.id === "customization" ? <Palette className="w-4 h-4 sm:mr-2" /> : null}
+                      <span className="hidden sm:inline">{tab.label}</span>
+                      <span className="sm:hidden">{tab.shortLabel}</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                <TabsContent value="basic" className="space-y-4 mt-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName" className="block mb-2">Tu Nombre Completo</Label>
                       <Input
-                        id="logo"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="cursor-pointer"
-                      />
-                      {proposalData.basicInfo.logo && (
-                        <div className="flex items-center space-x-4">
-                          <div className="relative">
-                            <img
-                              src={proposalData.basicInfo.logo || "/placeholder.svg"}
-                              alt="Logo preview"
-                              className="h-16 w-auto object-contain border rounded"
-                            />
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                              onClick={removeLogo}
-                            >
-                              ×
-                            </Button>
-                          </div>
-                          <p className="text-sm text-gray-600">Logo cargado correctamente</p>
-                        </div>
-                      )}
-                      <p className="text-xs text-gray-500">Formatos soportados: JPG, PNG, GIF. Tamaño máximo: 2MB</p>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="introduction"className="mb-2">Introducción</Label>
-                  <Textarea
-                    id="introduction"
-                    value={proposalData.basicInfo.introduction}
-                    onChange={(e) => updateBasicInfo("introduction", e.target.value)}
-                    placeholder="Breve introducción sobre la propuesta..."
-                    rows={4}
-                  />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="scope" className="space-y-4">
-                <div>
-                  <Label htmlFor="description"className="mb-2">Descripción del Proyecto</Label>
-                  <Textarea
-                    id="description"
-                    value={proposalData.projectScope.description}
-                    onChange={(e) => updateProjectScope("description", e.target.value)}
-                    placeholder="Descripción detallada del proyecto..."
-                    rows={4}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="objectives"className="mb-2">Objetivos</Label>
-                  <Textarea
-                    id="objectives"
-                    value={proposalData.projectScope.objectives}
-                    onChange={(e) => updateProjectScope("objectives", e.target.value)}
-                    placeholder="Objetivos principales del proyecto..."
-                    rows={4}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="requirements"className="mb-2">Requisitos</Label>
-                  <Textarea
-                    id="requirements"
-                    value={proposalData.projectScope.requirements}
-                    onChange={(e) => updateProjectScope("requirements", e.target.value)}
-                    placeholder="Requisitos técnicos o funcionales..."
-                    rows={4}
-                  />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="deliverables" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Entregables</h3>
-                  <Button onClick={addDeliverable} size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar
-                  </Button>
-                </div>
-                {proposalData.deliverables.map((deliverable) => (
-                  <Card key={deliverable.id}>
-                    <CardContent className="pt-6">
-                      <div className="space-y-4">
-                        <div>
-                          <Label className="mb-2">Nombre del Entregable</Label>
-                          <Input
-                            value={deliverable.name}
-                            onChange={(e) => updateDeliverable(deliverable.id, "name", e.target.value)}
-                            placeholder="Ej: Diseño de Interfaz de Usuario"
-                          />
-                        </div>
-                        <div>
-                          <Label className="mb-2">Descripción</Label>
-                          <Textarea
-                            value={deliverable.description}
-                            onChange={(e) => updateDeliverable(deliverable.id, "description", e.target.value)}
-                            placeholder="Descripción detallada del entregable..."
-                            rows={3}
-                          />
-                        </div>
-                        <div className="flex justify-end">
-                          <Button onClick={() => removeDeliverable(deliverable.id)} variant="destructive" size="sm">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </TabsContent>
-
-              <TabsContent value="timeline" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Cronograma</h3>
-                  <Button onClick={addMilestone} size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar Hito
-                  </Button>
-                </div>
-                {proposalData.timeline.map((milestone) => (
-                  <Card key={milestone.id}>
-                    <CardContent className="pt-6">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <Label className="mb-2">Nombre del Hito</Label>
-                          <Input
-                            value={milestone.name}
-                            onChange={(e) => updateMilestone(milestone.id, "name", e.target.value)}
-                            placeholder="Ej: Fase de Diseño"
-                          />
-                        </div>
-                        <div>
-                          <Label className="mb-2">Fecha Límite</Label>
-                          <Input
-                            type="date"
-                            value={milestone.deadline}
-                            onChange={(e) => updateMilestone(milestone.id, "deadline", e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <Label className="mb-2">Pago</Label>
-                          <Input
-                            value={milestone.payment}
-                            onChange={(e) => updateMilestone(milestone.id, "payment", e.target.value)}
-                            placeholder="Ej: $1,000"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-end mt-4">
-                        <Button onClick={() => removeMilestone(milestone.id)} variant="destructive" size="sm">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-
-                <div className="mt-8">
-                  <h3 className="text-lg font-semibold mb-4">Precios</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="totalPrice"className="mb-2">Precio Total</Label>
-                      <Input
-                        id="totalPrice"
-                        value={proposalData.pricing.totalPrice}
-                        onChange={(e) => updatePricing("totalPrice", e.target.value)}
-                        placeholder="Ej: $5,000"
+                        id="fullName"
+                        value={coverLetterData.fullName}
+                        onChange={(e) => updateField("fullName", e.target.value)}
+                        placeholder="Juan Pérez"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="paymentTerms"className="mb-2">Términos de Pago</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="position" className="block mb-2">Puesto al que Aplicas</Label>
                       <Input
-                        id="paymentTerms"
-                        value={proposalData.pricing.paymentTerms}
-                        onChange={(e) => updatePricing("paymentTerms", e.target.value)}
-                        placeholder="Ej: 50% adelantado, 50% al finalizar"
+                        id="position"
+                        value={coverLetterData.position}
+                        onChange={(e) => updateField("position", e.target.value)}
+                        placeholder="Desarrollador Frontend"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="company" className="block mb-2">Empresa</Label>
+                      <Input
+                        id="company"
+                        value={coverLetterData.company}
+                        onChange={(e) => updateField("company", e.target.value)}
+                        placeholder="Nombre de la Empresa"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hiringManager" className="block mb-2">Responsable de Contratación</Label>
+                      <Input
+                        id="hiringManager"
+                        value={coverLetterData.hiringManager}
+                        onChange={(e) => updateField("hiringManager", e.target.value)}
+                        placeholder="Nombre del Responsable (opcional)"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="block mb-2">Tu Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={coverLetterData.email}
+                        onChange={(e) => updateField("email", e.target.value)}
+                        placeholder="tu@email.com"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="block mb-2">Tu Teléfono</Label>
+                      <Input
+                        id="phone"
+                        value={coverLetterData.phone}
+                        onChange={(e) => updateField("phone", e.target.value)}
+                        placeholder="+1 234 567 8900"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="date" className="block mb-2">Fecha</Label>
+                      <Input
+                        id="date"
+                        type="date"
+                        value={coverLetterData.date}
+                        onChange={(e) => updateField("date", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="city" className="block mb-2">Ciudad</Label>
+                      <Input
+                        id="city"
+                        value={coverLetterData.city}
+                        onChange={(e) => updateField("city", e.target.value)}
+                        placeholder="Ciudad, País"
                       />
                     </div>
                   </div>
-                  <div className="mt-4">
-                    <Label htmlFor="additionalNotes"className="mb-2">Notas Adicionales</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="greeting" className="block mb-2">Saludo</Label>
+                    <Input
+                      id="greeting"
+                      value={coverLetterData.greeting}
+                      onChange={(e) => updateField("greeting", e.target.value)}
+                      placeholder="Estimado/a Sr./Sra. [Apellido]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="introduction" className="block mb-2">Introducción</Label>
                     <Textarea
-                      id="additionalNotes"
-                      value={proposalData.pricing.additionalNotes}
-                      onChange={(e) => updatePricing("additionalNotes", e.target.value)}
-                      placeholder="Cualquier nota adicional sobre precios o pagos..."
+                      id="introduction"
+                      value={coverLetterData.introduction}
+                      onChange={(e) => updateField("introduction", e.target.value)}
+                      placeholder="Párrafo de introducción explicando tu interés en el puesto..."
                       rows={3}
                     />
                   </div>
-                </div>
-              </TabsContent>
+                  <div className="space-y-2">
+                    <Label htmlFor="body" className="block mb-2">Cuerpo Principal</Label>
+                    <Textarea
+                      id="body"
+                      value={coverLetterData.body}
+                      onChange={(e) => updateField("body", e.target.value)}
+                      placeholder="Detalla tu experiencia relevante y por qué eres un buen candidato..."
+                      rows={6}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="closing" className="block mb-2">Cierre</Label>
+                    <Textarea
+                      id="closing"
+                      value={coverLetterData.closing}
+                      onChange={(e) => updateField("closing", e.target.value)}
+                      placeholder="Párrafo de cierre agradeciendo la consideración y expresando interés en una entrevista..."
+                      rows={3}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signature" className="block mb-2">Firma</Label>
+                    <Input
+                      id="signature"
+                      value={coverLetterData.signature}
+                      onChange={(e) => updateField("signature", e.target.value)}
+                      placeholder="Atentamente,"
+                    />
+                  </div>
+                </TabsContent>
+                {selectedTemplate === "custom" && (
+                  <TabsContent value="customization" className="space-y-6 mt-4">
+                    <div>
+                      <h3 className="text-base sm:text-lg font-semibold mb-4">Personalización</h3>
+                      <div className="mb-6">
+                        <Label className="text-base font-medium block mb-2">Combinaciones de Colores</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
+                          {colorPresets.map((preset) => (
+                            <Button
+                              key={preset.name}
+                              variant="outline"
+                              size="sm"
+                              onClick={() => applyColorPreset(preset)}
+                              className="justify-start h-auto py-2"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.header }} />
+                                <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.accent }} />
+                                <span className="text-xs">{preset.name}</span>
+                              </div>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="headerColor" className="block mb-2">Color de Cabecera</Label>
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              id="headerColor"
+                              type="color"
+                              value={coverLetterData.customization.headerColor}
+                              onChange={(e) => updateCustomization("headerColor", e.target.value)}
+                              className="w-12 h-10 flex-shrink-0"
+                            />
+                            <Input
+                              value={coverLetterData.customization.headerColor}
+                              onChange={(e) => updateCustomization("headerColor", e.target.value)}
+                              placeholder="#1e293b"
+                              className="flex-1"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="accentColor" className="block mb-2">Color de Acento</Label>
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              id="accentColor"
+                              type="color"
+                              value={coverLetterData.customization.accentColor}
+                              onChange={(e) => updateCustomization("accentColor", e.target.value)}
+                              className="w-12 h-10 flex-shrink-0"
+                            />
+                            <Input
+                              value={coverLetterData.customization.accentColor}
+                              onChange={(e) => updateCustomization("accentColor", e.target.value)}
+                              placeholder="#3b82f6"
+                              className="flex-1"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mb-6">
+                        <Label className="block mb-2">Fuente</Label>
+                        <Select
+                          value={coverLetterData.customization.fontFamily}
+                          onValueChange={(value) => updateCustomization("fontFamily", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {fontOptions.map((font) => (
+                              <SelectItem key={font.value} value={font.value}>
+                                {font.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="mb-6">
+                        <Label className="block mb-2">Estilo de Cabecera</Label>
+                        <Select
+                          value={coverLetterData.customization.headerStyle}
+                          onValueChange={(value) => updateCustomization("headerStyle", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="solid">Sólido</SelectItem>
+                            <SelectItem value="gradient">Gradiente</SelectItem>
+                            <SelectItem value="pattern">Patrón</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="mb-6">
+                        <Label className="block mb-2">Espaciado de Secciones</Label>
+                        <Select
+                          value={coverLetterData.customization.sectionSpacing}
+                          onValueChange={(value) => updateCustomization("sectionSpacing", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="compact">Compacto</SelectItem>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="spacious">Espacioso</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="mb-6">
+                        <Label className="block mb-2">Redondez de Bordes: {coverLetterData.customization.borderRadius}px</Label>
+                        <Slider
+                          value={[coverLetterData.customization.borderRadius]}
+                          onValueChange={(value) => updateCustomization("borderRadius", value[0])}
+                          max={20}
+                          min={0}
+                          step={1}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label className="block mb-2">Mostrar Iconos</Label>
+                        <Switch
+                          checked={coverLetterData.customization.showIcons}
+                          onCheckedChange={(checked) => updateCustomization("showIcons", checked)}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+                )}
+              </Tabs>
 
-              {selectedTemplate === "custom" && (
-                <TabsContent value="customization" className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Personalización</h3>
-
-                    {/* Color Presets */}
-                    <div className="mb-6">
-                      <Label className="text-base font-medium">Combinaciones de Colores</Label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+              {/* Mobile Tab Content */}
+              <div className="sm:hidden">
+                {activeTab === "basic" && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName" className="block mb-2">Tu Nombre Completo</Label>
+                      <Input
+                        id="fullName"
+                        value={coverLetterData.fullName}
+                        onChange={(e) => updateField("fullName", e.target.value)}
+                        placeholder="Juan Pérez"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="position" className="block mb-2">Puesto al que Aplicas</Label>
+                      <Input
+                        id="position"
+                        value={coverLetterData.position}
+                        onChange={(e) => updateField("position", e.target.value)}
+                        placeholder="Desarrollador Frontend"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="company" className="block mb-2">Empresa</Label>
+                      <Input
+                        id="company"
+                        value={coverLetterData.company}
+                        onChange={(e) => updateField("company", e.target.value)}
+                        placeholder="Nombre de la Empresa"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hiringManager" className="block mb-2">Responsable de Contratación</Label>
+                      <Input
+                        id="hiringManager"
+                        value={coverLetterData.hiringManager}
+                        onChange={(e) => updateField("hiringManager", e.target.value)}
+                        placeholder="Nombre del Responsable (opcional)"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="block mb-2">Tu Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={coverLetterData.email}
+                        onChange={(e) => updateField("email", e.target.value)}
+                        placeholder="tu@email.com"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="block mb-2">Tu Teléfono</Label>
+                      <Input
+                        id="phone"
+                        value={coverLetterData.phone}
+                        onChange={(e) => updateField("phone", e.target.value)}
+                        placeholder="+1 234 567 8900"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="date" className="block mb-2">Fecha</Label>
+                      <Input
+                        id="date"
+                        type="date"
+                        value={coverLetterData.date}
+                        onChange={(e) => updateField("date", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="city" className="block mb-2">Ciudad</Label>
+                      <Input
+                        id="city"
+                        value={coverLetterData.city}
+                        onChange={(e) => updateField("city", e.target.value)}
+                        placeholder="Ciudad, País"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="greeting" className="block mb-2">Saludo</Label>
+                      <Input
+                        id="greeting"
+                        value={coverLetterData.greeting}
+                        onChange={(e) => updateField("greeting", e.target.value)}
+                        placeholder="Estimado/a Sr./Sra. [Apellido]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="introduction" className="block mb-2">Introducción</Label>
+                      <Textarea
+                        id="introduction"
+                        value={coverLetterData.introduction}
+                        onChange={(e) => updateField("introduction", e.target.value)}
+                        placeholder="Párrafo de introducción explicando tu interés en el puesto..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="body" className="block mb-2">Cuerpo Principal</Label>
+                      <Textarea
+                        id="body"
+                        value={coverLetterData.body}
+                        onChange={(e) => updateField("body", e.target.value)}
+                        placeholder="Detalla tu experiencia relevante y por qué eres un buen candidato..."
+                        rows={6}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="closing" className="block mb-2">Cierre</Label>
+                      <Textarea
+                        id="closing"
+                        value={coverLetterData.closing}
+                        onChange={(e) => updateField("closing", e.target.value)}
+                        placeholder="Párrafo de cierre agradeciendo la consideración y expresando interés en una entrevista..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signature" className="block mb-2">Firma</Label>
+                      <Input
+                        id="signature"
+                        value={coverLetterData.signature}
+                        onChange={(e) => updateField("signature", e.target.value)}
+                        placeholder="Atentamente,"
+                      />
+                    </div>
+                  </div>
+                )}
+                {activeTab === "customization" && selectedTemplate === "custom" && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold">Personalización</h3>
+                    <div>
+                      <Label className="text-base font-medium block mb-2">Combinaciones de Colores</Label>
+                      <div className="grid grid-cols-1 gap-2">
                         {colorPresets.map((preset) => (
                           <Button
                             key={preset.name}
                             variant="outline"
                             size="sm"
                             onClick={() => applyColorPreset(preset)}
-                            className="justify-start"
+                            className="justify-start h-auto py-3"
                           >
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-3">
                               <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.header }} />
                               <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.accent }} />
-                              <span className="text-xs">{preset.name}</span>
+                              <span className="text-sm">{preset.name}</span>
                             </div>
                           </Button>
                         ))}
                       </div>
                     </div>
-
-                    {/* Custom Colors */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                      <div>
-                        <Label htmlFor="headerColor">Color de Cabecera</Label>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="headerColor" className="block mb-2">Color de Cabecera</Label>
                         <div className="flex items-center space-x-2">
                           <Input
                             id="headerColor"
                             type="color"
-                            value={proposalData.customization.headerColor}
+                            value={coverLetterData.customization.headerColor}
                             onChange={(e) => updateCustomization("headerColor", e.target.value)}
-                            className="w-16 h-10"
+                            className="w-12 h-10 flex-shrink-0"
                           />
                           <Input
-                            value={proposalData.customization.headerColor}
+                            value={coverLetterData.customization.headerColor}
                             onChange={(e) => updateCustomization("headerColor", e.target.value)}
                             placeholder="#1e293b"
+                            className="flex-1"
                           />
                         </div>
                       </div>
-                      <div>
-                        <Label htmlFor="accentColor">Color de Acento</Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="accentColor" className="block mb-2">Color de Acento</Label>
                         <div className="flex items-center space-x-2">
                           <Input
                             id="accentColor"
                             type="color"
-                            value={proposalData.customization.accentColor}
+                            value={coverLetterData.customization.accentColor}
                             onChange={(e) => updateCustomization("accentColor", e.target.value)}
-                            className="w-16 h-10"
+                            className="w-12 h-10 flex-shrink-0"
                           />
                           <Input
-                            value={proposalData.customization.accentColor}
+                            value={coverLetterData.customization.accentColor}
                             onChange={(e) => updateCustomization("accentColor", e.target.value)}
                             placeholder="#3b82f6"
+                            className="flex-1"
                           />
                         </div>
                       </div>
                     </div>
-
-                    {/* Font Selection */}
-                    <div className="mb-6">
-                      <Label>Fuente</Label>
-                      <Select
-                        value={proposalData.customization.fontFamily}
-                        onValueChange={(value) => updateCustomization("fontFamily", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {fontOptions.map((font) => (
-                            <SelectItem key={font.value} value={font.value}>
-                              {font.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Header Style */}
-                    <div className="mb-6">
-                      <Label>Estilo de Cabecera</Label>
-                      <Select
-                        value={proposalData.customization.headerStyle}
-                        onValueChange={(value) => updateCustomization("headerStyle", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="solid">Sólido</SelectItem>
-                          <SelectItem value="gradient">Gradiente</SelectItem>
-                          <SelectItem value="pattern">Patrón</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Logo Position */}
-                    <div className="mb-6">
-                      <Label>Posición del Logo</Label>
-                      <Select
-                        value={proposalData.customization.logoPosition}
-                        onValueChange={(value) => updateCustomization("logoPosition", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="left">Izquierda</SelectItem>
-                          <SelectItem value="center">Centro</SelectItem>
-                          <SelectItem value="right">Derecha</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Section Spacing */}
-                    <div className="mb-6">
-                      <Label>Espaciado de Secciones</Label>
-                      <Select
-                        value={proposalData.customization.sectionSpacing}
-                        onValueChange={(value) => updateCustomization("sectionSpacing", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="compact">Compacto</SelectItem>
-                          <SelectItem value="normal">Normal</SelectItem>
-                          <SelectItem value="spacious">Espacioso</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Border Radius */}
-                    <div className="mb-6">
-                      <Label>Redondez de Bordes: {proposalData.customization.borderRadius}px</Label>
-                      <Slider
-                        value={[proposalData.customization.borderRadius]}
-                        onValueChange={(value) => updateCustomization("borderRadius", value[0])}
-                        max={20}
-                        min={0}
-                        step={1}
-                        className="mt-2"
-                      />
-                    </div>
-
-                    {/* Show Icons */}
-                    <div className="flex items-center justify-between">
-                      <Label>Mostrar Iconos</Label>
-                      <Switch
-                        checked={proposalData.customization.showIcons}
-                        onCheckedChange={(checked) => updateCustomization("showIcons", checked)}
-                      />
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="block mb-2">Fuente</Label>
+                        <Select
+                          value={coverLetterData.customization.fontFamily}
+                          onValueChange={(value) => updateCustomization("fontFamily", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {fontOptions.map((font) => (
+                              <SelectItem key={font.value} value={font.value}>
+                                {font.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="block mb-2">Estilo de Cabecera</Label>
+                        <Select
+                          value={coverLetterData.customization.headerStyle}
+                          onValueChange={(value) => updateCustomization("headerStyle", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="solid">Sólido</SelectItem>
+                            <SelectItem value="gradient">Gradiente</SelectItem>
+                            <SelectItem value="pattern">Patrón</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="block mb-2">Espaciado de Secciones</Label>
+                        <Select
+                          value={coverLetterData.customization.sectionSpacing}
+                          onValueChange={(value) => updateCustomization("sectionSpacing", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="compact">Compacto</SelectItem>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="spacious">Espacioso</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="block mb-2">Redondez de Bordes: {coverLetterData.customization.borderRadius}px</Label>
+                        <Slider
+                          value={[coverLetterData.customization.borderRadius]}
+                          onValueChange={(value) => updateCustomization("borderRadius", value[0])}
+                          max={20}
+                          min={0}
+                          step={1}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label className="block mb-2">Mostrar Iconos</Label>
+                        <Switch
+                          checked={coverLetterData.customization.showIcons}
+                          onCheckedChange={(checked) => updateCustomization("showIcons", checked)}
+                        />
+                      </div>
                     </div>
                   </div>
-                </TabsContent>
-              )}
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Selector de Plantillas */}
-      <div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Plantillas</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {proposalTemplates.map((template) => (
-              <div
-                key={template.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                  selectedTemplate === template.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-                onClick={() => setSelectedTemplate(template.id)}
-              >
-                <h3 className="font-semibold">{template.name}</h3>
-                <p className="text-sm text-gray-600">{template.description}</p>
+                )}
               </div>
-            ))}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-        <div className="mt-6">
-          <Button onClick={() => setShowPreview(true)} className="w-full">
-            <Eye className="w-4 h-4 mr-2" />
-            Vista Previa
-          </Button>
+        {/* Desktop Template Selector */}
+        <div className="hidden lg:block">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Plantillas</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {coverLetterTemplates.map((template) => (
+                <div
+                  key={template.id}
+                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                    selectedTemplate === template.id
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setSelectedTemplate(template.id)}
+                >
+                  <h3 className="font-semibold">{template.name}</h3>
+                  <p className="text-sm text-gray-600">{template.description}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+          <div className="mt-6">
+            <Button onClick={() => setShowPreview(true)} className="w-full">
+              <Eye className="w-4 h-4 mr-2" />
+              Vista Previa
+            </Button>
+          </div>
         </div>
       </div>
     </div>

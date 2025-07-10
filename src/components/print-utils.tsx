@@ -8,95 +8,84 @@ export const printCV = (template: string, data: CVData) => {
   const printWindow = window.open("", "_blank")
   if (!printWindow) return
 
-  const { personalInfo, experience, education, skills, customization } = data
-
-  const getSkillPercentage = (level: string) => {
-    switch (level) {
-      case "Básico":
-        return 25
-      case "Intermedio":
-        return 50
-      case "Avanzado":
-        return 75
-      case "Experto":
-        return 100
-      default:
-        return 50
-    }
-  }
-
-  const renderSkillBars = (skills: typeof data.skills) => {
-    if (!customization.showSkillBars) {
-      return skills
-        .map(
-          (skill) => `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; width: 100%;">
-          <span style="font-weight: 500; flex: 1;">${skill.name}</span>
-          <span style="background-color: ${customization.accentColor}30; color: ${customization.accentColor}; padding: 4px 8px; border-radius: ${customization.borderRadius}px; font-size: 12px; white-space: nowrap;">${skill.level}</span>
-        </div>
-      `,
-        )
-        .join("")
-    }
-
-    if (customization.skillBarStyle === "circles") {
-      return skills
-        .map((skill) => {
-          const percentage = getSkillPercentage(skill.level)
-          const circles = Array.from(
-            { length: 5 },
-            (_, i) =>
-              `<div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${i < percentage / 20 ? customization.accentColor : "#e5e7eb"}; display: inline-block; margin-left: 4px;"></div>`,
-          ).join("")
-          return `
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; width: 100%;">
-            <span style="font-weight: 500; flex: 1;">${skill.name}</span>
-            <div style="display: flex; align-items: center;">${circles}</div>
-          </div>
-        `
-        })
-        .join("")
-    }
-
-    if (customization.skillBarStyle === "dots") {
-      return skills
-        .map((skill) => {
-          const percentage = getSkillPercentage(skill.level)
-          const dots = Array.from(
-            { length: 4 },
-            (_, i) =>
-              `<div style="width: 8px; height: 8px; border-radius: 50%; background-color: ${i < percentage / 25 ? customization.accentColor : "#e5e7eb"}; display: inline-block; margin-left: 4px;"></div>`,
-          ).join("")
-          return `
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; width: 100%;">
-            <span style="font-weight: 500; flex: 1;">${skill.name}</span>
-            <div style="display: flex; align-items: center;">${dots}</div>
-          </div>
-        `
-        })
-        .join("")
-    }
-
-    // Default bars
-    return skills
-      .map((skill) => {
-        const percentage = getSkillPercentage(skill.level)
-        return `
-        <div style="margin-bottom: 12px; width: 100%;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <span style="font-weight: 500;">${skill.name}</span>
-            <span style="font-size: 12px; color: #6b7280;">${skill.level}</span>
-          </div>
-          <div style="width: 100%; background-color: #e5e7eb; border-radius: 9999px; height: 8px; overflow: hidden;">
-            <div style="height: 8px; border-radius: 9999px; background-color: ${customization.accentColor}; width: ${percentage}%; transition: all 0.3s;"></div>
-          </div>
-        </div>
-      `
-      })
-      .join("")
-  }
+  const { basicInfo, experience, education, skills, customization } = data
+  const layout = customization.layout || "traditional"
 
   let printContent = ""
+
+  // Estilos base comunes
+  const baseStyles = `
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    
+    @page {
+      size: A4;
+      margin: 0.5in;
+    }
+    
+    body { 
+      font-family: Arial, sans-serif; 
+      line-height: 1.6; 
+      color: #333; 
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    
+    .container { 
+      max-width: 100%; 
+      margin: 0 auto; 
+      background: white; 
+    }
+    
+    .sidebar-layout {
+      display: flex;
+      gap: 20px;
+    }
+    
+    .sidebar {
+      width: 250px;
+      background-color: #f8fafc;
+      padding: 20px;
+      border-right: 2px solid #e2e8f0;
+    }
+    
+    .main-content {
+      flex: 1;
+      padding: 20px;
+    }
+    
+    .modern-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 32px;
+    }
+    
+    @media print {
+      body { 
+        margin: 0 !important; 
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      .container { 
+        box-shadow: none !important; 
+      }
+      
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+  `
 
   if (template === "custom") {
     const headerStyle =
@@ -106,51 +95,77 @@ export const printCV = (template: string, data: CVData) => {
           ? `background-color: ${customization.headerColor} !important; background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0) !important; background-size: 20px 20px !important;`
           : `background-color: ${customization.headerColor} !important;`
 
-    const spacingValue =
-      customization.sectionSpacing === "compact"
-        ? "16px"
-        : customization.sectionSpacing === "spacious"
-          ? "32px"
-          : "24px"
+    const sidebarContent =
+      layout === "sidebar"
+        ? `
+      <div class="sidebar" style="background-color: ${customization.backgroundColor}; border-right: 2px solid ${customization.accentColor};">
+        <div style="margin-bottom: 32px;">
+          <h3 style="color: ${customization.headerColor}; font-size: 18px; font-weight: bold; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid ${customization.accentColor};">
+            Contacto
+          </h3>
+          <div style="font-size: 14px; line-height: 1.8;">
+            ${basicInfo.email ? `<div style="margin-bottom: 8px;">${customization.showIcons ? "📧 " : ""}${basicInfo.email}</div>` : ""}
+            ${basicInfo.phone ? `<div style="margin-bottom: 8px;">${customization.showIcons ? "📱 " : ""}${basicInfo.phone}</div>` : ""}
+            ${basicInfo.location ? `<div style="margin-bottom: 8px;">${customization.showIcons ? "📍 " : ""}${basicInfo.location}</div>` : ""}
+            ${basicInfo.website ? `<div style="margin-bottom: 8px;">${customization.showIcons ? "🌐 " : ""}${basicInfo.website}</div>` : ""}
+          </div>
+        </div>
+        
+        ${
+          skills.length > 0
+            ? `
+          <div style="margin-bottom: 32px;">
+            <h3 style="color: ${customization.headerColor}; font-size: 18px; font-weight: bold; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid ${customization.accentColor};">
+              ${customization.showIcons ? "🏆 " : ""}Habilidades
+            </h3>
+            ${skills
+              .map(
+                (skill) => `
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="font-weight: 500; font-size: 14px;">${skill.name}</span>
+                  <span style="font-size: 12px; color: #6b7280;">${skill.level}%</span>
+                </div>
+                <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
+                  <div style="height: 100%; width: ${skill.level}%; background-color: ${customization.accentColor}; border-radius: 4px;"></div>
+                </div>
+              </div>
+            `,
+              )
+              .join("")}
+          </div>
+        `
+            : ""
+        }
+        
+        ${
+          basicInfo.summary && layout === "sidebar"
+            ? `
+          <div>
+            <h3 style="color: ${customization.headerColor}; font-size: 18px; font-weight: bold; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid ${customization.accentColor};">
+              ${customization.showIcons ? "👤 " : ""}Resumen
+            </h3>
+            <p style="font-size: 14px; line-height: 1.6;">${basicInfo.summary}</p>
+          </div>
+        `
+            : ""
+        }
+      </div>
+    `
+        : ""
 
     printContent = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>CV - ${personalInfo.fullName}</title>
+          <title>CV - ${basicInfo.fullName}</title>
           <meta charset="utf-8">
           <style>
-            * { 
-              margin: 0; 
-              padding: 0; 
-              box-sizing: border-box; 
-              -webkit-print-color-adjust: exact !important;
-              color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            
-            @page {
-              size: A4;
-              margin: 0.5in;
-            }
+            ${baseStyles}
             
             body { 
               font-family: ${customization.fontFamily}, Arial, sans-serif; 
               color: ${customization.textColor}; 
-              background-color: ${customization.backgroundColor};
-              line-height: 1.6;
-              -webkit-print-color-adjust: exact !important;
-              color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            
-            .container { 
-              max-width: 100%; 
-              margin: 0 auto; 
-              background: white; 
-              border-radius: ${customization.borderRadius}px;
-              overflow: hidden;
-              box-shadow: none;
             }
             
             .header { 
@@ -162,41 +177,39 @@ export const printCV = (template: string, data: CVData) => {
               print-color-adjust: exact !important;
             }
             
-            .header * {
-              color: white !important;
+            .header * { color: white !important; }
+            
+            .profile-section {
+              display: flex;
+              align-items: center;
+              gap: 24px;
+            }
+            
+            .profile-photo {
+              width: 96px;
+              height: 96px;
+              border-radius: 50%;
+              object-fit: cover;
+              border: 4px solid rgba(255,255,255,0.2);
             }
             
             .header h1 { 
               font-size: 36px; 
               font-weight: bold; 
               margin-bottom: 8px; 
-              color: white !important;
             }
             
-            .header-info { 
-              display: table;
-              width: 100%;
-              table-layout: fixed;
+            .header-subtitle {
+              font-size: 20px;
+              opacity: 0.9;
+              margin-bottom: 16px;
+            }
+            
+            .contact-info { 
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 8px;
               font-size: 14px; 
-            }
-            
-            .header-info-col {
-              display: table-cell;
-              width: 50%;
-              vertical-align: top;
-              padding-right: 16px;
-            }
-            
-            .header-info-col:last-child {
-              padding-right: 0;
-              padding-left: 16px;
-            }
-            
-            .header-info div { 
-              display: flex; 
-              align-items: center; 
-              margin-bottom: 8px; 
-              color: white !important;
             }
             
             .content { 
@@ -204,8 +217,7 @@ export const printCV = (template: string, data: CVData) => {
             }
             
             .section { 
-              margin-bottom: ${spacingValue}; 
-              page-break-inside: avoid;
+              margin-bottom: 32px; 
             }
             
             .section h2 { 
@@ -219,34 +231,15 @@ export const printCV = (template: string, data: CVData) => {
               align-items: center; 
             }
             
-            .section h2 .icon { 
-              margin-right: 8px; 
-              width: 24px; 
-              height: 24px; 
-            }
-            
             .experience-item, .education-item { 
               margin-bottom: 24px; 
-              page-break-inside: avoid;
             }
             
             .item-header { 
-              display: table;
-              width: 100%;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
               margin-bottom: 8px; 
-            }
-            
-            .item-header-left {
-              display: table-cell;
-              width: 70%;
-              vertical-align: top;
-            }
-            
-            .item-header-right {
-              display: table-cell;
-              width: 30%;
-              vertical-align: top;
-              text-align: right;
             }
             
             .item-title { 
@@ -262,262 +255,279 @@ export const printCV = (template: string, data: CVData) => {
             }
             
             .item-date { 
-              background-color: ${customization.accentColor}30 !important; 
+              background-color: ${customization.accentColor}20 !important; 
               color: ${customization.accentColor} !important; 
               padding: 4px 12px; 
-              border-radius: ${customization.borderRadius}px; 
+              border-radius: 20px; 
               font-size: 12px; 
-              display: inline-block;
               white-space: nowrap;
             }
             
-            .item-description { 
-              line-height: 1.6; 
-              margin-top: 8px;
-            }
-            
             .skills-grid { 
-              display: table;
+              display: grid;
+              grid-template-columns: ${layout === "modern" ? "1fr" : "1fr 1fr"};
+              gap: 16px;
+            }
+            
+            .skill-item {
+              margin-bottom: 12px;
+            }
+            
+            .skill-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 4px;
+            }
+            
+            .skill-bar {
               width: 100%;
-              table-layout: fixed;
+              height: 8px;
+              background-color: #e5e7eb;
+              border-radius: 4px;
+              overflow: hidden;
             }
             
-            .skills-col {
-              display: table-cell;
-              width: 50%;
-              vertical-align: top;
-              padding-right: 16px;
-            }
-            
-            .skills-col:last-child {
-              padding-right: 0;
-              padding-left: 16px;
-            }
-            
-            @media print {
-              body { 
-                margin: 0 !important; 
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-              
-              .container { 
-                box-shadow: none !important; 
-                border-radius: 0 !important;
-              }
-              
-              .header {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-              
-              * {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
+            .skill-progress {
+              height: 100%;
+              background-color: ${customization.accentColor};
+              transition: width 0.3s ease;
             }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1>${personalInfo.fullName || "Tu Nombre"}</h1>
-              <div class="header-info">
-                <div class="header-info-col">
-                  ${personalInfo.email ? `<div>${customization.showIcons ? "📧 " : ""}${personalInfo.email}</div>` : ""}
-                  ${personalInfo.phone ? `<div>${customization.showIcons ? "📱 " : ""}${personalInfo.phone}</div>` : ""}
-                  ${personalInfo.website ? `<div>${customization.showIcons ? "🌐 " : ""}${personalInfo.website}</div>` : ""}
-                </div>
-                <div class="header-info-col">
-                  ${personalInfo.address ? `<div>${customization.showIcons ? "📍 " : ""}${personalInfo.address}</div>` : ""}
-                  ${personalInfo.linkedin ? `<div>${customization.showIcons ? "💼 " : ""}${personalInfo.linkedin}</div>` : ""}
+              <div class="profile-section">
+                ${basicInfo.photo ? `<img src="${basicInfo.photo}" alt="Profile" class="profile-photo" />` : ""}
+                <div style="flex: 1;">
+                  <h1>${basicInfo.fullName || "Tu Nombre"}</h1>
+                  ${basicInfo.title ? `<div class="header-subtitle">${basicInfo.title}</div>` : ""}
+                  ${
+                    layout !== "sidebar"
+                      ? `
+                    <div class="contact-info">
+                      ${basicInfo.email ? `<div>${customization.showIcons ? "📧 " : ""}${basicInfo.email}</div>` : ""}
+                      ${basicInfo.phone ? `<div>${customization.showIcons ? "📱 " : ""}${basicInfo.phone}</div>` : ""}
+                      ${basicInfo.location ? `<div>${customization.showIcons ? "📍 " : ""}${basicInfo.location}</div>` : ""}
+                      ${basicInfo.website ? `<div>${customization.showIcons ? "🌐 " : ""}${basicInfo.website}</div>` : ""}
+                    </div>
+                  `
+                      : ""
+                  }
                 </div>
               </div>
             </div>
             
-            <div class="content">
-              ${
-                personalInfo.summary
+            ${
+              layout === "sidebar"
+                ? `
+              <div class="sidebar-layout">
+                ${sidebarContent}
+                <div class="main-content">
+            `
+                : layout === "modern"
                   ? `
-                <div class="section">
-                  <h2>${customization.showIcons ? "🏆 " : ""}Resumen Profesional</h2>
-                  <p>${personalInfo.summary}</p>
-                </div>
-              `
-                  : ""
-              }
-              
-              ${
-                experience.length > 0
-                  ? `
-                <div class="section">
-                  <h2>${customization.showIcons ? "💼 " : ""}Experiencia Laboral</h2>
-                  ${experience
-                    .map(
-                      (exp) => `
-                    <div class="experience-item">
-                      <div class="item-header">
-                        <div class="item-header-left">
-                          <div class="item-title">${exp.position}</div>
-                          <div class="item-company">${exp.company}</div>
-                        </div>
-                        <div class="item-header-right">
-                          <div class="item-date">${exp.startDate} - ${exp.current ? "Presente" : exp.endDate}</div>
+              <div class="content">
+                ${
+                  basicInfo.summary
+                    ? `
+                  <div class="section">
+                    <h2>${customization.showIcons ? "👤 " : ""}Resumen Profesional</h2>
+                    <p>${basicInfo.summary}</p>
+                  </div>
+                `
+                    : ""
+                }
+                <div class="modern-layout">
+                  <div>
+            `
+                  : `<div class="content">`
+            }
+            
+            ${
+              basicInfo.summary && layout !== "sidebar" && layout !== "modern"
+                ? `
+              <div class="section">
+                <h2>${customization.showIcons ? "👤 " : ""}Resumen Profesional</h2>
+                <p>${basicInfo.summary}</p>
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              experience.length > 0
+                ? `
+              <div class="section">
+                <h2>${customization.showIcons ? "💼 " : ""}Experiencia Laboral</h2>
+                ${experience
+                  .map(
+                    (exp) => `
+                  <div class="experience-item">
+                    <div class="item-header">
+                      <div>
+                        <div class="item-title">${exp.position}</div>
+                        <div class="item-company">${exp.company}</div>
+                      </div>
+                      <div class="item-date">${exp.startDate} - ${exp.endDate || "Presente"}</div>
+                    </div>
+                    ${exp.description ? `<div>${exp.description}</div>` : ""}
+                  </div>
+                `,
+                  )
+                  .join("")}
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              education.length > 0
+                ? `
+              <div class="section">
+                <h2>${customization.showIcons ? "🎓 " : ""}Educación</h2>
+                ${education
+                  .map(
+                    (edu) => `
+                  <div class="education-item">
+                    <div class="item-header">
+                      <div>
+                        <div class="item-title">${edu.degree}</div>
+                        <div class="item-company">${edu.institution}</div>
+                      </div>
+                      <div class="item-date">${edu.startDate} - ${edu.endDate}</div>
+                    </div>
+                    ${edu.description ? `<div>${edu.description}</div>` : ""}
+                  </div>
+                `,
+                  )
+                  .join("")}
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              layout === "modern"
+                ? `
+                  </div>
+                  <div>
+                    ${
+                      skills.length > 0
+                        ? `
+                      <div class="section">
+                        <h2>${customization.showIcons ? "🚀 " : ""}Habilidades</h2>
+                        <div class="skills-grid">
+                          ${skills
+                            .map(
+                              (skill) => `
+                            <div class="skill-item">
+                              <div class="skill-header">
+                                <span style="font-weight: 500;">${skill.name}</span>
+                                <span style="font-size: 12px; color: #6b7280;">${skill.level}%</span>
+                              </div>
+                              <div class="skill-bar">
+                                <div class="skill-progress" style="width: ${skill.level}%;"></div>
+                              </div>
+                            </div>
+                          `,
+                            )
+                            .join("")}
                         </div>
                       </div>
-                      ${exp.description ? `<div class="item-description">${exp.description}</div>` : ""}
-                    </div>
-                  `,
-                    )
-                    .join("")}
-                </div>
-              `
-                  : ""
-              }
-              
-              ${
-                education.length > 0
-                  ? `
-                <div class="section">
-                  <h2>${customization.showIcons ? "🎓 " : ""}Educación</h2>
-                  ${education
-                    .map(
-                      (edu) => `
-                    <div class="education-item">
-                      <div class="item-header">
-                        <div class="item-header-left">
-                          <div class="item-title">${edu.degree} en ${edu.field}</div>
-                          <div class="item-company">${edu.institution}</div>
-                          ${edu.gpa ? `<div style="font-size: 12px; opacity: 0.75;">Promedio: ${edu.gpa}</div>` : ""}
-                        </div>
-                        <div class="item-header-right">
-                          <div class="item-date">${edu.startDate} - ${edu.endDate}</div>
-                        </div>
-                      </div>
-                    </div>
-                  `,
-                    )
-                    .join("")}
-                </div>
-              `
-                  : ""
-              }
-              
-              ${
-                skills.length > 0
-                  ? `
-                <div class="section">
-                  <h2>${customization.showIcons ? "🚀 " : ""}Habilidades</h2>
-                  <div class="skills-grid">
-                    <div class="skills-col">
-                      ${renderSkillBars(skills.slice(0, Math.ceil(skills.length / 2)))}
-                    </div>
-                    <div class="skills-col">
-                      ${renderSkillBars(skills.slice(Math.ceil(skills.length / 2)))}
-                    </div>
+                    `
+                        : ""
+                    }
                   </div>
                 </div>
-              `
+              </div>
+            `
+                : skills.length > 0 && layout !== "sidebar"
+                  ? `
+              <div class="section">
+                <h2>${customization.showIcons ? "🚀 " : ""}Habilidades</h2>
+                <div class="skills-grid">
+                  ${skills
+                    .map(
+                      (skill) => `
+                    <div class="skill-item">
+                      <div class="skill-header">
+                        <span style="font-weight: 500;">${skill.name}</span>
+                        <span style="font-size: 12px; color: #6b7280;">${skill.level}%</span>
+                      </div>
+                      <div class="skill-bar">
+                        <div class="skill-progress" style="width: ${skill.level}%;"></div>
+                      </div>
+                    </div>
+                  `,
+                    )
+                    .join("")}
+                </div>
+              </div>
+            `
                   : ""
-              }
-            </div>
+            }
+            
+            ${
+              layout === "sidebar"
+                ? `
+                </div>
+              </div>
+            `
+                : layout !== "modern"
+                  ? `</div>`
+                  : ""
+            }
           </div>
         </body>
       </html>
     `
-  } else {
-    // Templates existentes mejorados
+  } else if (template === "modern") {
     printContent = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>CV - ${personalInfo.fullName}</title>
+          <title>CV - ${basicInfo.fullName}</title>
           <meta charset="utf-8">
           <style>
-            * { 
-              margin: 0; 
-              padding: 0; 
-              box-sizing: border-box; 
-              -webkit-print-color-adjust: exact !important;
-              color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            
-            @page {
-              size: A4;
-              margin: 0.5in;
-            }
-            
-            body { 
-              font-family: Arial, sans-serif; 
-              line-height: 1.6; 
-              color: #333; 
-              -webkit-print-color-adjust: exact !important;
-              color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            
-            .container { 
-              max-width: 100%; 
-              margin: 0 auto; 
-              background: white; 
-            }
+            ${baseStyles}
             
             .header { 
               background-color: #1e293b !important; 
               color: white !important; 
               padding: 32px; 
               -webkit-print-color-adjust: exact !important;
-              color-adjust: exact !important;
-              print-color-adjust: exact !important;
             }
             
-            .header * {
-              color: white !important;
+            .header * { color: white !important; }
+            
+            .profile-section {
+              display: flex;
+              align-items: center;
+              gap: 24px;
             }
             
-            .header h1 { 
-              font-size: 36px; 
-              font-weight: bold; 
-              margin-bottom: 8px; 
-              color: white !important;
+            .profile-photo {
+              width: 96px;
+              height: 96px;
+              border-radius: 50%;
+              object-fit: cover;
+              border: 4px solid rgba(255,255,255,0.2);
             }
             
-            .header-info { 
-              display: table;
-              width: 100%;
-              table-layout: fixed;
+            .header h1 { font-size: 36px; font-weight: bold; margin-bottom: 8px; }
+            .header-subtitle { font-size: 20px; opacity: 0.9; margin-bottom: 16px; }
+            
+            .contact-info { 
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 8px;
               font-size: 14px; 
             }
             
-            .header-info-col {
-              display: table-cell;
-              width: 50%;
-              vertical-align: top;
-              padding-right: 16px;
-            }
-            
-            .header-info-col:last-child {
-              padding-right: 0;
-              padding-left: 16px;
-            }
-            
-            .header-info div { 
-              margin-bottom: 8px; 
-              color: white !important;
-            }
-            
-            .content { 
-              padding: 32px; 
-            }
-            
-            .section { 
-              margin-bottom: 24px; 
-              page-break-inside: avoid;
-            }
+            .content { padding: 32px; }
+            .section { margin-bottom: 32px; }
             
             .section h2 { 
               font-size: 24px; 
@@ -528,28 +538,10 @@ export const printCV = (template: string, data: CVData) => {
               border-bottom: 2px solid #e2e8f0; 
             }
             
-            .experience-item, .education-item { 
-              margin-bottom: 24px; 
-              page-break-inside: avoid;
-            }
-            
             .item-header { 
-              display: table;
-              width: 100%;
+              display: flex;
+              justify-content: space-between;
               margin-bottom: 8px; 
-            }
-            
-            .item-header-left {
-              display: table-cell;
-              width: 70%;
-              vertical-align: top;
-            }
-            
-            .item-header-right {
-              display: table-cell;
-              width: 30%;
-              vertical-align: top;
-              text-align: right;
             }
             
             .item-title { 
@@ -569,194 +561,854 @@ export const printCV = (template: string, data: CVData) => {
               padding: 4px 12px; 
               border-radius: 4px; 
               font-size: 12px; 
-              display: inline-block;
-              white-space: nowrap;
             }
             
             .skills-grid { 
-              display: table;
-              width: 100%;
-              table-layout: fixed;
+              display: grid;
+              grid-template-columns: ${layout === "modern" ? "1fr" : "1fr 1fr"};
+              gap: 16px;
             }
             
-            .skills-col {
-              display: table-cell;
-              width: 50%;
-              vertical-align: top;
-              padding-right: 16px;
-            }
-            
-            .skills-col:last-child {
-              padding-right: 0;
-              padding-left: 16px;
-            }
-            
-            .skill-item { 
-              display: flex; 
-              justify-content: space-between; 
-              align-items: center; 
-              margin-bottom: 8px; 
-              width: 100%;
-            }
-            
-            .skill-level { 
-              background-color: #f1f5f9 !important; 
-              color: #475569 !important; 
-              padding: 2px 8px; 
-              border-radius: 4px; 
-              font-size: 12px; 
-              white-space: nowrap;
-            }
-            
-            @media print {
-              body { 
-                margin: 0 !important; 
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-              
-              .container { 
-                box-shadow: none !important; 
-              }
-              
-              .header {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-              
-              * {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-            }
+            .skill-item { margin-bottom: 12px; }
+            .skill-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+            .skill-bar { width: 100%; height: 8px; background-color: #e2e8f0; border-radius: 4px; }
+            .skill-progress { height: 100%; background-color: #3b82f6; border-radius: 4px; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1>${personalInfo.fullName || "Tu Nombre"}</h1>
-              <div class="header-info">
-                <div class="header-info-col">
-                  ${personalInfo.email ? `<div>📧 ${personalInfo.email}</div>` : ""}
-                  ${personalInfo.phone ? `<div>📱 ${personalInfo.phone}</div>` : ""}
-                  ${personalInfo.website ? `<div>🌐 ${personalInfo.website}</div>` : ""}
-                </div>
-                <div class="header-info-col">
-                  ${personalInfo.address ? `<div>📍 ${personalInfo.address}</div>` : ""}
-                  ${personalInfo.linkedin ? `<div>💼 ${personalInfo.linkedin}</div>` : ""}
+              <div class="profile-section">
+                ${basicInfo.photo ? `<img src="${basicInfo.photo}" alt="Profile" class="profile-photo" />` : ""}
+                <div style="flex: 1;">
+                  <h1>${basicInfo.fullName || "Tu Nombre"}</h1>
+                  ${basicInfo.title ? `<div class="header-subtitle">${basicInfo.title}</div>` : ""}
+                  ${
+                    layout !== "sidebar"
+                      ? `
+                    <div class="contact-info">
+                      ${basicInfo.email ? `<div>📧 ${basicInfo.email}</div>` : ""}
+                      ${basicInfo.phone ? `<div>📱 ${basicInfo.phone}</div>` : ""}
+                      ${basicInfo.location ? `<div>📍 ${basicInfo.location}</div>` : ""}
+                      ${basicInfo.website ? `<div>🌐 ${basicInfo.website}</div>` : ""}
+                    </div>
+                  `
+                      : ""
+                  }
                 </div>
               </div>
             </div>
             
-            <div class="content">
-              ${
-                personalInfo.summary
-                  ? `
-                <div class="section">
-                  <h2>Resumen Profesional</h2>
-                  <p>${personalInfo.summary}</p>
-                </div>
-              `
-                  : ""
-              }
-              
-              ${
-                experience.length > 0
-                  ? `
-                <div class="section">
-                  <h2>Experiencia Laboral</h2>
-                  ${experience
-                    .map(
-                      (exp) => `
-                    <div class="experience-item">
-                      <div class="item-header">
-                        <div class="item-header-left">
-                          <div class="item-title">${exp.position}</div>
-                          <div class="item-company">${exp.company}</div>
-                        </div>
-                        <div class="item-header-right">
-                          <div class="item-date">${exp.startDate} - ${exp.current ? "Presente" : exp.endDate}</div>
-                        </div>
-                      </div>
-                      ${exp.description ? `<div>${exp.description}</div>` : ""}
-                    </div>
-                  `,
-                    )
-                    .join("")}
-                </div>
-              `
-                  : ""
-              }
-              
-              ${
-                education.length > 0
-                  ? `
-                <div class="section">
-                  <h2>Educación</h2>
-                  ${education
-                    .map(
-                      (edu) => `
-                    <div class="education-item">
-                      <div class="item-header">
-                        <div class="item-header-left">
-                          <div class="item-title">${edu.degree} en ${edu.field}</div>
-                          <div class="item-company">${edu.institution}</div>
-                          ${edu.gpa ? `<div style="font-size: 12px;">Promedio: ${edu.gpa}</div>` : ""}
-                        </div>
-                        <div class="item-header-right">
-                          <div class="item-date">${edu.startDate} - ${edu.endDate}</div>
-                        </div>
-                      </div>
-                    </div>
-                  `,
-                    )
-                    .join("")}
-                </div>
-              `
-                  : ""
-              }
-              
-              ${
-                skills.length > 0
-                  ? `
-                <div class="section">
-                  <h2>Habilidades</h2>
-                  <div class="skills-grid">
-                    <div class="skills-col">
-                      ${skills
-                        .slice(0, Math.ceil(skills.length / 2))
-                        .map(
-                          (skill) => `
-                        <div class="skill-item">
-                          <span>${skill.name}</span>
-                          <span class="skill-level">${skill.level}</span>
-                        </div>
-                      `,
-                        )
-                        .join("")}
-                    </div>
-                    <div class="skills-col">
-                      ${skills
-                        .slice(Math.ceil(skills.length / 2))
-                        .map(
-                          (skill) => `
-                        <div class="skill-item">
-                          <span>${skill.name}</span>
-                          <span class="skill-level">${skill.level}</span>
-                        </div>
-                      `,
-                        )
-                        .join("")}
+            ${
+              layout === "sidebar"
+                ? `
+              <div class="sidebar-layout">
+                <div class="sidebar">
+                  <div style="margin-bottom: 32px;">
+                    <h3 style="color: #1e293b; font-size: 18px; font-weight: bold; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #3b82f6;">
+                      Contacto
+                    </h3>
+                    <div style="font-size: 14px; line-height: 1.8;">
+                      ${basicInfo.email ? `<div style="margin-bottom: 8px;">📧 ${basicInfo.email}</div>` : ""}
+                      ${basicInfo.phone ? `<div style="margin-bottom: 8px;">📱 ${basicInfo.phone}</div>` : ""}
+                      ${basicInfo.location ? `<div style="margin-bottom: 8px;">📍 ${basicInfo.location}</div>` : ""}
+                      ${basicInfo.website ? `<div style="margin-bottom: 8px;">🌐 ${basicInfo.website}</div>` : ""}
                     </div>
                   </div>
+                  
+                  ${
+                    skills.length > 0
+                      ? `
+                    <div style="margin-bottom: 32px;">
+                      <h3 style="color: #1e293b; font-size: 18px; font-weight: bold; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #3b82f6;">
+                        🏆 Habilidades
+                      </h3>
+                      ${skills
+                        .map(
+                          (skill) => `
+                        <div style="margin-bottom: 12px;">
+                          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span style="font-weight: 500; font-size: 14px;">${skill.name}</span>
+                            <span style="font-size: 12px; color: #6b7280;">${skill.level}%</span>
+                          </div>
+                          <div style="width: 100%; height: 8px; background-color: #e2e8f0; border-radius: 4px;">
+                            <div style="height: 100%; width: ${skill.level}%; background-color: #3b82f6; border-radius: 4px;"></div>
+                          </div>
+                        </div>
+                      `,
+                        )
+                        .join("")}
+                    </div>
+                  `
+                      : ""
+                  }
+                  
+                  ${
+                    basicInfo.summary && layout === "sidebar"
+                      ? `
+                    <div>
+                      <h3 style="color: #1e293b; font-size: 18px; font-weight: bold; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #3b82f6;">
+                        👤 Resumen
+                      </h3>
+                      <p style="font-size: 14px; line-height: 1.6;">${basicInfo.summary}</p>
+                    </div>
+                  `
+                      : ""
+                  }
                 </div>
-              `
+                <div class="main-content">
+            `
+                : layout === "modern"
+                  ? `
+              <div class="content">
+                ${
+                  basicInfo.summary
+                    ? `
+                  <div class="section">
+                    <h2>Resumen Profesional</h2>
+                    <p>${basicInfo.summary}</p>
+                  </div>
+                `
+                    : ""
+                }
+                <div class="modern-layout">
+                  <div>
+            `
+                  : `<div class="content">`
+            }
+            
+            ${
+              basicInfo.summary && layout !== "sidebar" && layout !== "modern"
+                ? `
+              <div class="section">
+                <h2>Resumen Profesional</h2>
+                <p>${basicInfo.summary}</p>
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              experience.length > 0
+                ? `
+              <div class="section">
+                <h2>Experiencia Laboral</h2>
+                ${experience
+                  .map(
+                    (exp) => `
+                  <div style="margin-bottom: 24px;">
+                    <div class="item-header">
+                      <div>
+                        <div class="item-title">${exp.position}</div>
+                        <div class="item-company">${exp.company}</div>
+                      </div>
+                      <div class="item-date">${exp.startDate} - ${exp.endDate || "Presente"}</div>
+                    </div>
+                    ${exp.description ? `<div>${exp.description}</div>` : ""}
+                  </div>
+                `,
+                  )
+                  .join("")}
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              education.length > 0
+                ? `
+              <div class="section">
+                <h2>Educación</h2>
+                ${education
+                  .map(
+                    (edu) => `
+                  <div style="margin-bottom: 16px;">
+                    <div class="item-header">
+                      <div>
+                        <div class="item-title">${edu.degree}</div>
+                        <div class="item-company">${edu.institution}</div>
+                      </div>
+                      <div class="item-date">${edu.startDate} - ${edu.endDate}</div>
+                    </div>
+                    ${edu.description ? `<div style="font-size: 14px; color: #64748b;">${edu.description}</div>` : ""}
+                  </div>
+                `,
+                  )
+                  .join("")}
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              layout === "modern"
+                ? `
+                  </div>
+                  <div>
+                    ${
+                      skills.length > 0
+                        ? `
+                      <div class="section">
+                        <h2>Habilidades</h2>
+                        <div class="skills-grid">
+                          ${skills
+                            .map(
+                              (skill) => `
+                            <div class="skill-item">
+                              <div class="skill-header">
+                                <span style="font-weight: 500;">${skill.name}</span>
+                                <span style="font-size: 12px; color: #64748b;">${skill.level}%</span>
+                              </div>
+                              <div class="skill-bar">
+                                <div class="skill-progress" style="width: ${skill.level}%;"></div>
+                              </div>
+                            </div>
+                          `,
+                            )
+                            .join("")}
+                        </div>
+                      </div>
+                    `
+                        : ""
+                    }
+                  </div>
+                </div>
+              </div>
+            `
+                : skills.length > 0 && layout !== "sidebar"
+                  ? `
+              <div class="section">
+                <h2>Habilidades</h2>
+                <div class="skills-grid">
+                  ${skills
+                    .map(
+                      (skill) => `
+                    <div class="skill-item">
+                      <div class="skill-header">
+                        <span style="font-weight: 500;">${skill.name}</span>
+                        <span style="font-size: 12px; color: #64748b;">${skill.level}%</span>
+                      </div>
+                      <div class="skill-bar">
+                        <div class="skill-progress" style="width: ${skill.level}%;"></div>
+                      </div>
+                    </div>
+                  `,
+                    )
+                    .join("")}
+                </div>
+              </div>
+            `
                   : ""
-              }
+            }
+            
+            ${
+              layout === "sidebar"
+                ? `
+                </div>
+              </div>
+            `
+                : layout !== "modern"
+                  ? `</div>`
+                  : ""
+            }
+          </div>
+        </body>
+      </html>
+    `
+  } else if (template === "classic") {
+    printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>CV - ${basicInfo.fullName}</title>
+          <meta charset="utf-8">
+          <style>
+            ${baseStyles}
+            
+            .header { 
+              text-align: center; 
+              margin-bottom: 32px; 
+              padding-bottom: 24px; 
+              border-bottom: 2px solid #d1d5db; 
+            }
+            
+            .profile-photo {
+              width: 128px;
+              height: 128px;
+              border-radius: 50%;
+              object-fit: cover;
+              margin: 0 auto 16px;
+              border: 4px solid #d1d5db;
+            }
+            
+            .header h1 { font-size: 32px; font-weight: bold; margin-bottom: 8px; }
+            .header-subtitle { font-size: 20px; color: #6b7280; margin-bottom: 16px; }
+            
+            .contact-info { 
+              font-size: 14px; 
+              color: #6b7280; 
+              line-height: 1.4;
+            }
+            
+            .content { padding: 32px; }
+            .section { margin-bottom: 32px; }
+            
+            .section h2 { 
+              font-size: 20px; 
+              font-weight: bold; 
+              margin-bottom: 12px; 
+              text-transform: uppercase; 
+              letter-spacing: 0.05em; 
+            }
+            
+            .item-header { 
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 8px; 
+            }
+            
+            .item-title { font-weight: 600; }
+            .item-company { font-style: italic; }
+            
+            .skills-grid { 
+              display: grid;
+              grid-template-columns: ${layout === "modern" ? "1fr" : "1fr 1fr"};
+              gap: 8px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            ${
+              layout === "sidebar"
+                ? `
+              <div class="sidebar-layout">
+                <div class="sidebar">
+                  ${basicInfo.photo ? `<img src="${basicInfo.photo}" alt="Profile" class="profile-photo" style="width: 100px; height: 100px; margin-bottom: 16px;" />` : ""}
+                  <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 8px; text-align: center;">${basicInfo.fullName || "Tu Nombre"}</h1>
+                  ${basicInfo.title ? `<div style="font-size: 16px; color: #6b7280; margin-bottom: 16px; text-align: center;">${basicInfo.title}</div>` : ""}
+                  
+                  <div style="margin-bottom: 32px;">
+                    <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 12px; text-transform: uppercase;">Contacto</h3>
+                    <div style="font-size: 14px; line-height: 1.8;">
+                      ${basicInfo.email ? `<div style="margin-bottom: 8px;">${basicInfo.email}</div>` : ""}
+                      ${basicInfo.phone ? `<div style="margin-bottom: 8px;">${basicInfo.phone}</div>` : ""}
+                      ${basicInfo.location ? `<div style="margin-bottom: 8px;">${basicInfo.location}</div>` : ""}:""}
+                      ${basicInfo.location ? `<div style="margin-bottom: 8px;">${basicInfo.location}</div>` : ""}
+                      ${basicInfo.website ? `<div style="margin-bottom: 8px;">${basicInfo.website}</div>` : ""}
+                    </div>
+                  </div>
+                  
+                  ${
+                    skills.length > 0
+                      ? `
+                    <div style="margin-bottom: 32px;">
+                      <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 12px; text-transform: uppercase;">Habilidades</h3>
+                      ${skills
+                        .map(
+                          (skill) => `
+                        <div style="margin-bottom: 8px; font-size: 14px;">
+                          <span style="font-weight: 500;">${skill.name}</span> - ${skill.level}%
+                        </div>
+                      `,
+                        )
+                        .join("")}
+                    </div>
+                  `
+                      : ""
+                  }
+                  
+                  ${
+                    basicInfo.summary && layout === "sidebar"
+                      ? `
+                    <div>
+                      <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 12px; text-transform: uppercase;">Objetivo Profesional</h3>
+                      <p style="font-size: 14px; line-height: 1.6;">${basicInfo.summary}</p>
+                    </div>
+                  `
+                      : ""
+                  }
+                </div>
+                <div class="main-content">
+            `
+                : `
+              <div class="content">
+                <div class="header">
+                  ${basicInfo.photo ? `<img src="${basicInfo.photo}" alt="Profile" class="profile-photo" />` : ""}
+                  <h1>${basicInfo.fullName || "Tu Nombre"}</h1>
+                  ${basicInfo.title ? `<div class="header-subtitle">${basicInfo.title}</div>` : ""}
+                  <div class="contact-info">
+                    ${basicInfo.email ? `<div>${basicInfo.email}</div>` : ""}
+                    ${basicInfo.phone ? `<div>${basicInfo.phone}</div>` : ""}
+                    ${basicInfo.location ? `<div>${basicInfo.location}</div>` : ""}
+                    ${basicInfo.website ? `<div>${basicInfo.website}</div>` : ""}
+                  </div>
+                </div>
+            `
+            }
+            
+            ${
+              basicInfo.summary && layout !== "sidebar"
+                ? `
+              <div class="section">
+                <h2>Objetivo Profesional</h2>
+                <p>${basicInfo.summary}</p>
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              experience.length > 0
+                ? `
+              <div class="section">
+                <h2>Experiencia Laboral</h2>
+                ${experience
+                  .map(
+                    (exp) => `
+                  <div style="margin-bottom: 24px;">
+                    <div class="item-header">
+                      <div>
+                        <div class="item-title">${exp.position}</div>
+                        <div class="item-company">${exp.company}</div>
+                      </div>
+                      <div style="font-size: 14px;">${exp.startDate} - ${exp.endDate || "Presente"}</div>
+                    </div>
+                    ${exp.description ? `<div style="font-size: 14px; line-height: 1.5;">${exp.description}</div>` : ""}
+                  </div>
+                `,
+                  )
+                  .join("")}
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              education.length > 0
+                ? `
+              <div class="section">
+                <h2>Educación</h2>
+                ${education
+                  .map(
+                    (edu) => `
+                  <div style="margin-bottom: 16px;">
+                    <div class="item-header">
+                      <div>
+                        <div class="item-title">${edu.degree}</div>
+                        <div class="item-company">${edu.institution}</div>
+                      </div>
+                      <div style="font-size: 14px;">${edu.startDate} - ${edu.endDate}</div>
+                    </div>
+                    ${edu.description ? `<div style="font-size: 14px;">${edu.description}</div>` : ""}
+                  </div>
+                `,
+                  )
+                  .join("")}
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              skills.length > 0 && layout !== "sidebar"
+                ? `
+              <div class="section">
+                <h2>Habilidades</h2>
+                <div class="skills-grid">
+                  ${skills
+                    .map(
+                      (skill) => `
+                    <div style="font-size: 14px; margin-bottom: 4px;">
+                      <span style="font-weight: 500;">${skill.name}</span> - ${skill.level}%
+                    </div>
+                  `,
+                    )
+                    .join("")}
+                </div>
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              layout === "sidebar"
+                ? `
+                </div>
+              </div>
+            `
+                : `</div>`
+            }
+          </div>
+        </body>
+      </html>
+    `
+  } else if (template === "creative") {
+    printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>CV - ${basicInfo.fullName}</title>
+          <meta charset="utf-8">
+          <style>
+            ${baseStyles}
+            
+            .header { 
+              background: linear-gradient(135deg, #9333ea, #2563eb) !important;
+              color: white !important; 
+              padding: 32px; 
+              -webkit-print-color-adjust: exact !important;
+            }
+            
+            .header * { color: white !important; }
+            
+            .profile-section {
+              display: flex;
+              align-items: center;
+              gap: 24px;
+            }
+            
+            .profile-photo {
+              width: 96px;
+              height: 96px;
+              border-radius: 50%;
+              object-fit: cover;
+              border: 4px solid rgba(255,255,255,0.2);
+            }
+            
+            .header h1 { font-size: 36px; font-weight: bold; margin-bottom: 8px; }
+            .header-subtitle { font-size: 20px; opacity: 0.9; margin-bottom: 16px; }
+            
+            .contact-info { 
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 8px;
+              font-size: 14px; 
+            }
+            
+            .content { padding: 32px; }
+            .section { margin-bottom: 32px; }
+            
+            .section h2 { 
+              font-size: 24px; 
+              font-weight: bold; 
+              margin-bottom: 16px; 
+              display: flex;
+              align-items: center;
+            }
+            
+            .section-icon {
+              width: 32px;
+              height: 32px;
+              border-radius: 50%;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 12px;
+              font-size: 16px;
+            }
+            
+            .purple-section h2 { color: #9333ea !important; }
+            .purple-section .section-icon { background-color: #f3e8ff !important; }
+            .purple-section .item-bg { background-color: #f3e8ff !important; }
+            
+            .blue-section h2 { color: #2563eb !important; }
+            .blue-section .section-icon { background-color: #dbeafe !important; }
+            .blue-section .item-bg { background-color: #dbeafe !important; }
+            
+            .green-section h2 { color: #059669 !important; }
+            .green-section .section-icon { background-color: #d1fae5 !important; }
+            .green-section .item-bg { background-color: #d1fae5 !important; }
+            
+            .orange-section h2 { color: #ea580c !important; }
+            .orange-section .section-icon { background-color: #fed7aa !important; }
+            .orange-section .item-bg { background-color: #fed7aa !important; }
+            
+            .item-bg {
+              padding: 16px;
+              border-radius: 8px;
+              margin-bottom: 16px;
+            }
+            
+            .item-header { 
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 8px; 
+            }
+            
+            .item-title { font-size: 20px; font-weight: 600; }
+            .item-company { font-size: 18px; font-weight: 500; }
+            
+            .item-date { 
+              padding: 4px 12px; 
+              border-radius: 20px; 
+              font-size: 12px; 
+              font-weight: 600;
+            }
+            
+            .skills-grid { 
+              display: grid;
+              grid-template-columns: ${layout === "modern" ? "1fr" : "1fr 1fr"};
+              gap: 16px;
+            }
+            
+            .skill-item {
+              padding: 12px;
+              border-radius: 8px;
+              margin-bottom: 8px;
+            }
+            
+            .skill-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+            .skill-bar { width: 100%; height: 8px; border-radius: 4px; }
+            .skill-progress { height: 100%; border-radius: 4px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="profile-section">
+                ${basicInfo.photo ? `<img src="${basicInfo.photo}" alt="Profile" class="profile-photo" />` : ""}
+                <div style="flex: 1;">
+                  <h1>${basicInfo.fullName || "Tu Nombre"}</h1>
+                  ${basicInfo.title ? `<div class="header-subtitle">${basicInfo.title}</div>` : ""}
+                  ${
+                    layout !== "sidebar"
+                      ? `
+                    <div class="contact-info">
+                      ${basicInfo.email ? `<div>📧 ${basicInfo.email}</div>` : ""}
+                      ${basicInfo.phone ? `<div>📱 ${basicInfo.phone}</div>` : ""}
+                      ${basicInfo.location ? `<div>📍 ${basicInfo.location}</div>` : ""}
+                      ${basicInfo.website ? `<div>🌐 ${basicInfo.website}</div>` : ""}
+                    </div>
+                  `
+                      : ""
+                  }
+                </div>
+              </div>
             </div>
+            
+            ${
+              layout === "sidebar"
+                ? `
+              <div class="sidebar-layout">
+                <div class="sidebar" style="background: linear-gradient(135deg, #f3e8ff, #dbeafe);">
+                  <div style="margin-bottom: 32px;">
+                    <h3 style="color: #7c3aed; font-size: 18px; font-weight: bold; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #8b5cf6;">
+                      📞 Contacto
+                    </h3>
+                    <div style="font-size: 14px; line-height: 1.8;">
+                      ${basicInfo.email ? `<div style="margin-bottom: 8px;">📧 ${basicInfo.email}</div>` : ""}
+                      ${basicInfo.phone ? `<div style="margin-bottom: 8px;">📱 ${basicInfo.phone}</div>` : ""}
+                      ${basicInfo.location ? `<div style="margin-bottom: 8px;">📍 ${basicInfo.location}</div>` : ""}
+                      ${basicInfo.website ? `<div style="margin-bottom: 8px;">🌐 ${basicInfo.website}</div>` : ""}
+                    </div>
+                  </div>
+                  
+                  ${
+                    skills.length > 0
+                      ? `
+                    <div style="margin-bottom: 32px;">
+                      <h3 style="color: #ea580c; font-size: 18px; font-weight: bold; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #f97316;">
+                        🚀 Habilidades
+                      </h3>
+                      ${skills
+                        .map(
+                          (skill) => `
+                        <div style="background-color: #fed7aa; padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-weight: 500; color: #9a3412;">${skill.name}</span>
+                            <span style="background-color: #fdba74; color: #9a3412; padding: 2px 8px; border-radius: 12px; font-size: 12px;">${skill.level}%</span>
+                          </div>
+                          <div style="width: 100%; height: 8px; background-color: #fdba74; border-radius: 4px;">
+                            <div style="height: 100%; width: ${skill.level}%; background-color: #ea580c; border-radius: 4px;"></div>
+                          </div>
+                        </div>
+                      `,
+                        )
+                        .join("")}
+                    </div>
+                  `
+                      : ""
+                  }
+                  
+                  ${
+                    basicInfo.summary && layout === "sidebar"
+                      ? `
+                    <div>
+                      <h3 style="color: #9333ea; font-size: 18px; font-weight: bold; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #8b5cf6;">
+                        ✨ Sobre Mí
+                      </h3>
+                      <div style="background-color: #f3e8ff; padding: 16px; border-radius: 8px;">
+                        <p style="font-size: 14px; line-height: 1.6;">${basicInfo.summary}</p>
+                      </div>
+                    </div>
+                  `
+                      : ""
+                  }
+                </div>
+                <div class="main-content">
+            `
+                : layout === "modern"
+                  ? `
+              <div class="content">
+                ${
+                  basicInfo.summary
+                    ? `
+                  <div class="section purple-section">
+                    <h2><span class="section-icon">✨</span>Sobre Mí</h2>
+                    <div class="item-bg">
+                      <p>${basicInfo.summary}</p>
+                    </div>
+                  </div>
+                `
+                    : ""
+                }
+                <div class="modern-layout">
+                  <div>
+            `
+                  : `<div class="content">`
+            }
+            
+            ${
+              basicInfo.summary && layout !== "sidebar" && layout !== "modern"
+                ? `
+              <div class="section purple-section">
+                <h2><span class="section-icon">✨</span>Sobre Mí</h2>
+                <div class="item-bg">
+                  <p>${basicInfo.summary}</p>
+                </div>
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              experience.length > 0
+                ? `
+              <div class="section blue-section">
+                <h2><span class="section-icon">💼</span>Experiencia</h2>
+                ${experience
+                  .map(
+                    (exp) => `
+                  <div class="item-bg">
+                    <div class="item-header">
+                      <div>
+                        <div class="item-title" style="color: #1e40af;">${exp.position}</div>
+                        <div class="item-company" style="color: #2563eb;">${exp.company}</div>
+                      </div>
+                      <div class="item-date" style="background-color: #bfdbfe; color: #1e40af;">
+                        ${exp.startDate} - ${exp.endDate || "Presente"}
+                      </div>
+                    </div>
+                    ${exp.description ? `<div>${exp.description}</div>` : ""}
+                  </div>
+                `,
+                  )
+                  .join("")}
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              education.length > 0
+                ? `
+              <div class="section green-section">
+                <h2><span class="section-icon">🎓</span>Educación</h2>
+                ${education
+                  .map(
+                    (edu) => `
+                  <div class="item-bg">
+                    <div class="item-header">
+                      <div>
+                        <div class="item-title" style="color: #047857;">${edu.degree}</div>
+                        <div class="item-company" style="color: #059669;">${edu.institution}</div>
+                      </div>
+                      <div class="item-date" style="background-color: #a7f3d0; color: #047857;">
+                        ${edu.startDate} - ${edu.endDate}
+                      </div>
+                    </div>
+                    ${edu.description ? `<div style="font-size: 14px; color: #374151;">${edu.description}</div>` : ""}
+                  </div>
+                `,
+                  )
+                  .join("")}
+              </div>
+            `
+                : ""
+            }
+            
+            ${
+              layout === "modern"
+                ? `
+                  </div>
+                  <div>
+                    ${
+                      skills.length > 0
+                        ? `
+                      <div class="section orange-section">
+                        <h2><span class="section-icon">🚀</span>Habilidades</h2>
+                        <div class="skills-grid">
+                          ${skills
+                            .map(
+                              (skill) => `
+                            <div class="skill-item" style="background-color: #fed7aa;">
+                              <div class="skill-header">
+                                <span style="font-weight: 500; color: #9a3412;">${skill.name}</span>
+                                <span style="background-color: #fdba74; color: #9a3412; padding: 2px 8px; border-radius: 12px; font-size: 12px;">${skill.level}%</span>
+                              </div>
+                              <div class="skill-bar" style="background-color: #fdba74;">
+                                <div class="skill-progress" style="width: ${skill.level}%; background-color: #ea580c;"></div>
+                              </div>
+                            </div>
+                          `,
+                            )
+                            .join("")}
+                        </div>
+                      </div>
+                    `
+                        : ""
+                    }
+                  </div>
+                </div>
+              </div>
+            `
+                : skills.length > 0 && layout !== "sidebar"
+                  ? `
+              <div class="section orange-section">
+                <h2><span class="section-icon">🚀</span>Habilidades</h2>
+                <div class="skills-grid">
+                  ${skills
+                    .map(
+                      (skill) => `
+                    <div class="skill-item" style="background-color: #fed7aa;">
+                      <div class="skill-header">
+                        <span style="font-weight: 500; color: #9a3412;">${skill.name}</span>
+                        <span style="background-color: #fdba74; color: #9a3412; padding: 2px 8px; border-radius: 12px; font-size: 12px;">${skill.level}%</span>
+                      </div>
+                      <div class="skill-bar" style="background-color: #fdba74;">
+                        <div class="skill-progress" style="width: ${skill.level}%; background-color: #ea580c;"></div>
+                      </div>
+                    </div>
+                  `,
+                    )
+                    .join("")}
+                </div>
+              </div>
+            `
+                  : ""
+            }
+            
+            ${
+              layout === "sidebar"
+                ? `
+                </div>
+              </div>
+            `
+                : layout !== "modern"
+                  ? `</div>`
+                  : ""
+            }
           </div>
         </body>
       </html>
@@ -766,7 +1418,6 @@ export const printCV = (template: string, data: CVData) => {
   printWindow.document.write(printContent)
   printWindow.document.close()
 
-  // Esperar a que se cargue completamente antes de imprimir
   printWindow.onload = () => {
     setTimeout(() => {
       printWindow.print()
