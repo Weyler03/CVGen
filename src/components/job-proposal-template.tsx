@@ -1,6 +1,7 @@
 import type { JobProposalData } from "@/lib/job-proposal-data"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import Image from "next/image"
 
 interface JobProposalTemplateProps {
   template: string
@@ -18,7 +19,7 @@ export default function JobProposalTemplate({ template, data }: JobProposalTempl
         <div className="text-center mb-8 pb-6 border-b-2 border-gray-200">
           {basicInfo.logo && (
             <div className="flex justify-center mb-4">
-              <img
+              <Image
                 src={basicInfo.logo || "/placeholder.svg"}
                 alt="Company Logo"
                 className="h-16 w-auto object-contain"
@@ -151,7 +152,7 @@ export default function JobProposalTemplate({ template, data }: JobProposalTempl
             </div>
             {basicInfo.logo && (
               <div className="ml-8">
-                <img
+                <Image
                   src={basicInfo.logo || "/placeholder.svg"}
                   alt="Company Logo"
                   className="h-16 w-auto object-contain bg-white p-2 rounded"
@@ -284,7 +285,7 @@ export default function JobProposalTemplate({ template, data }: JobProposalTempl
             </div>
             {basicInfo.logo && (
               <div className="ml-8">
-                <img
+                <Image
                   src={basicInfo.logo || "/placeholder.svg"}
                   alt="Company Logo"
                   className="h-20 w-auto object-contain bg-white/10 backdrop-blur-sm p-3 rounded-lg"

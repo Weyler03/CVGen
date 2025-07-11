@@ -33,6 +33,7 @@ import {
 import CVTemplate from "./cv-template"
 import { printCV } from "./print-utils"
 import { initialCVData, cvTemplates, layoutOptions, fontOptions, colorPresets, type CVData } from "@/lib/cv-data"
+import Image from "next/image"
 
 export default function CVGenerator() {
   const [cvData, setCVData] = useState<CVData>(initialCVData)
@@ -47,7 +48,7 @@ export default function CVGenerator() {
     }))
   }
 
-  const updateCustomization = (field: string, value: any) => {
+  const updateCustomization = (field: string, value: unknown) => {
     setCVData((prev) => ({
       ...prev,
       customization: { ...prev.customization, [field]: value },
@@ -331,7 +332,7 @@ export default function CVGenerator() {
                             Subir Foto
                           </Button>
                           {cvData.basicInfo.photo && (
-                            <img
+                            <Image
                               src={cvData.basicInfo.photo || "/placeholder.svg"}
                               alt="Preview"
                               className="w-12 h-12 rounded-full object-cover"
@@ -508,7 +509,7 @@ export default function CVGenerator() {
                         </Button>
                       </div>
 
-                      {cvData.skills.map((skill, index) => (
+                      {cvData.skills.map((skill) => (
                         <Card key={skill.id}>
                           <CardContent className="pt-6">
                             <div className="flex items-center gap-4">
@@ -730,7 +731,7 @@ export default function CVGenerator() {
                         <div className="text-center py-8">
                           <p className="text-gray-500">
                             Las opciones de diseño están disponibles solo para la plantilla personalizada. Selecciona
-                            "Personalizado" para acceder a todas las opciones de personalización.
+                            &quot;Personalizado&quot; para acceder a todas las opciones de personalización.
                           </p>
                         </div>
                       )}

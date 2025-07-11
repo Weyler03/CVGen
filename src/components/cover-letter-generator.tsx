@@ -29,7 +29,7 @@ export default function CoverLetterGenerator() {
     }))
   }
 
-  const updateCustomization = (field: keyof typeof coverLetterData.customization, value: any) => {
+  const updateCustomization = (field: keyof typeof coverLetterData.customization, value: unknown) => {
     setCoverLetterData((prev) => ({
       ...prev,
       customization: { ...prev.customization, [field]: value },

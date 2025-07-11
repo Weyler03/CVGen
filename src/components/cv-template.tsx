@@ -1,5 +1,6 @@
 import type { CVData } from "@/lib/cv-data"
 import { Mail, Phone, MapPin, Globe, Briefcase, GraduationCap, Award, User } from "lucide-react"
+import Image from "next/image"
 
 interface CVTemplateProps {
   template: string
@@ -102,7 +103,7 @@ export default function CVTemplate({ template, data }: CVTemplateProps) {
         <div className="text-white p-8 print-preserve-bg" style={headerStyle}>
           <div className="flex items-center space-x-6">
             {basicInfo.photo && (
-              <img
+              <Image
                 src={basicInfo.photo || "/placeholder.svg"}
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover border-4 border-white/20"
@@ -123,7 +124,7 @@ export default function CVTemplate({ template, data }: CVTemplateProps) {
         <div className="bg-slate-800 text-white p-8 print-preserve-bg">
           <div className="flex items-center space-x-6">
             {basicInfo.photo && (
-              <img
+              <Image
                 src={basicInfo.photo || "/placeholder.svg"}
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover border-4 border-white/20"
@@ -150,7 +151,7 @@ export default function CVTemplate({ template, data }: CVTemplateProps) {
       return (
         <div className="text-center mb-8 border-b-2 border-gray-300 pb-6">
           {basicInfo.photo && (
-            <img
+            <Image
               src={basicInfo.photo || "/placeholder.svg"}
               alt="Profile"
               className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border-4 border-gray-200"
@@ -175,7 +176,7 @@ export default function CVTemplate({ template, data }: CVTemplateProps) {
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-8 print-preserve-bg">
           <div className="flex items-center space-x-6">
             {basicInfo.photo && (
-              <img
+              <Image
                 src={basicInfo.photo || "/placeholder.svg"}
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover border-4 border-white/20"

@@ -2,13 +2,11 @@
 
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import CVGenerator from "@/components/cv-generator"
 import CoverLetterGenerator from "@/components/cover-letter-generator"
 import JobProposalGenerator from "@/components/job-proposal-generator"
-import Link from "next/link"
-import { ArrowLeft, FileText, Mail, Briefcase } from "lucide-react"
+import { FileText, Mail, Briefcase } from "lucide-react"
 
 function Home() {
   const [activeSection, setActiveSection] = useState("cv")
