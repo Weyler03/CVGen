@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-// import { Separator } from "@/components/ui/separator"
+import { Separator } from "@/components/ui/separator"
 import {
   Plus,
   Trash2,
@@ -262,7 +262,7 @@ export default function CVGenerator() {
                     <TabsContent value="basic" className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="fullName">Nombre Completo</Label>
+                          <Label htmlFor="fullName" className="mb-2">Nombre Completo</Label>
                           <Input
                             id="fullName"
                             value={cvData.basicInfo.fullName}
@@ -271,7 +271,7 @@ export default function CVGenerator() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="title">Título Profesional</Label>
+                          <Label htmlFor="title" className="mb-2">Título Profesional</Label>
                           <Input
                             id="title"
                             value={cvData.basicInfo.title}
@@ -280,7 +280,7 @@ export default function CVGenerator() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="email">Email</Label>
+                          <Label htmlFor="email" className="mb-2">Email</Label>
                           <Input
                             id="email"
                             type="email"
@@ -290,7 +290,7 @@ export default function CVGenerator() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="phone">Teléfono</Label>
+                          <Label htmlFor="phone" className="mb-2">Teléfono</Label>
                           <Input
                             id="phone"
                             value={cvData.basicInfo.phone}
@@ -299,7 +299,7 @@ export default function CVGenerator() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="location">Ubicación</Label>
+                          <Label htmlFor="location" className="mb-2">Ubicación</Label>
                           <Input
                             id="location"
                             value={cvData.basicInfo.location}
@@ -308,7 +308,7 @@ export default function CVGenerator() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="website">Sitio Web</Label>
+                          <Label htmlFor="website" className="mb-2">Sitio Web</Label>
                           <Input
                             id="website"
                             value={cvData.basicInfo.website}
@@ -319,7 +319,7 @@ export default function CVGenerator() {
                       </div>
 
                       <div>
-                        <Label htmlFor="photo">Foto de Perfil</Label>
+                        <Label htmlFor="photo" className="mb-2">Foto de Perfil</Label>
                         <div className="flex items-center gap-4 mt-2">
                           <Button
                             type="button"
@@ -348,7 +348,7 @@ export default function CVGenerator() {
                       </div>
 
                       <div>
-                        <Label htmlFor="summary">Resumen Profesional</Label>
+                        <Label htmlFor="summary" className="mb-2">Resumen Profesional</Label>
                         <Textarea
                           id="summary"
                           value={cvData.basicInfo.summary}
@@ -381,7 +381,7 @@ export default function CVGenerator() {
                           <CardContent className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
-                                <Label>Empresa</Label>
+                                <Label className="mb-2">Empresa</Label>
                                 <Input
                                   value={exp.company}
                                   onChange={(e) => updateExperience(exp.id, "company", e.target.value)}
@@ -389,7 +389,7 @@ export default function CVGenerator() {
                                 />
                               </div>
                               <div>
-                                <Label>Cargo</Label>
+                                <Label className="mb-2">Cargo</Label>
                                 <Input
                                   value={exp.position}
                                   onChange={(e) => updateExperience(exp.id, "position", e.target.value)}
@@ -397,7 +397,7 @@ export default function CVGenerator() {
                                 />
                               </div>
                               <div>
-                                <Label>Fecha de Inicio</Label>
+                                <Label className="mb-2">Fecha de Inicio</Label>
                                 <Input
                                   type="date"
                                   value={exp.startDate}
@@ -406,7 +406,7 @@ export default function CVGenerator() {
                                 />
                               </div>
                               <div>
-                                <Label>Fecha de Fin</Label>
+                                <Label className="mb-2">Fecha de Fin</Label>
                                 <Input
                                 type="date"
                                   value={exp.endDate}
@@ -416,7 +416,7 @@ export default function CVGenerator() {
                               </div>
                             </div>
                             <div>
-                              <Label>Descripción</Label>
+                              <Label className="mb-2">Descripción</Label>
                               <Textarea
                                 value={exp.description}
                                 onChange={(e) => updateExperience(exp.id, "description", e.target.value)}
@@ -451,7 +451,7 @@ export default function CVGenerator() {
                           <CardContent className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
-                                <Label>Institución</Label>
+                                <Label className="mb-2">Institución</Label>
                                 <Input
                                   value={edu.institution}
                                   onChange={(e) => updateEducation(edu.id, "institution", e.target.value)}
@@ -459,7 +459,7 @@ export default function CVGenerator() {
                                 />
                               </div>
                               <div>
-                                <Label>Título</Label>
+                                <Label className="mb-2">Título</Label>
                                 <Input
                                   value={edu.degree}
                                   onChange={(e) => updateEducation(edu.id, "degree", e.target.value)}
@@ -467,16 +467,18 @@ export default function CVGenerator() {
                                 />
                               </div>
                               <div>
-                                <Label>Fecha de Inicio</Label>
+                                <Label className="mb-2">Fecha de Inicio</Label>
                                 <Input
+                                type="date"
                                   value={edu.startDate}
                                   onChange={(e) => updateEducation(edu.id, "startDate", e.target.value)}
                                   placeholder="Ej: 2016"
                                 />
                               </div>
                               <div>
-                                <Label>Fecha de Fin</Label>
+                                <Label className="mb-2">Fecha de Fin</Label>
                                 <Input
+                                type="date"
                                   value={edu.endDate}
                                   onChange={(e) => updateEducation(edu.id, "endDate", e.target.value)}
                                   placeholder="Ej: 2020"
@@ -484,7 +486,7 @@ export default function CVGenerator() {
                               </div>
                             </div>
                             <div>
-                              <Label>Descripción</Label>
+                              <Label className="mb-2">Descripción</Label>
                               <Textarea
                                 value={edu.description}
                                 onChange={(e) => updateEducation(edu.id, "description", e.target.value)}
@@ -511,7 +513,7 @@ export default function CVGenerator() {
                           <CardContent className="pt-6">
                             <div className="flex items-center gap-4">
                               <div className="flex-1">
-                                <Label>Habilidad</Label>
+                                <Label className="mb-2">Habilidad</Label>
                                 <Input
                                   value={skill.name}
                                   onChange={(e) => updateSkill(skill.id, "name", e.target.value)}
@@ -519,7 +521,7 @@ export default function CVGenerator() {
                                 />
                               </div>
                               <div className="w-32">
-                                <Label>Nivel ({skill.level}%)</Label>
+                                <Label className="mb-2">Nivel ({skill.level}%)</Label>
                                 <Slider
                                   value={[skill.level]}
                                   onValueChange={(value) => updateSkill(skill.id, "level", value[0])}
@@ -548,8 +550,9 @@ export default function CVGenerator() {
                                 <Button
                                   key={index}
                                   variant="outline"
-                                  className="h-auto p-3 justify-start bg-transparent"
+                                  className="h-auto p-3 justify-start bg-transparent overflow-auto"
                                   onClick={() => applyColorPreset(preset)}
+                                  
                                 >
                                   <div className="flex items-center gap-3">
                                     <div className="flex gap-1">
@@ -569,7 +572,7 @@ export default function CVGenerator() {
                             </div>
                           </div>
 
-                          {/* <Separator /> */}
+                          <Separator />
 
                           {/* Custom Colors */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -643,7 +646,7 @@ export default function CVGenerator() {
                             </div>
                           </div>
 
-                          {/* <Separator /> */}
+                          <Separator />
 
                           {/* Typography */}
                           <div>
@@ -653,7 +656,7 @@ export default function CVGenerator() {
                             </Label>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
                               <div>
-                                <Label htmlFor="fontFamily">Fuente</Label>
+                                <Label htmlFor="fontFamily" className="mb-2">Fuente</Label>
                                 <Select
                                   value={cvData.customization.fontFamily}
                                   onValueChange={(value) => updateCustomization("fontFamily", value)}
@@ -671,7 +674,7 @@ export default function CVGenerator() {
                                 </Select>
                               </div>
                               <div>
-                                <Label htmlFor="headerStyle">Estilo de Encabezado</Label>
+                                <Label htmlFor="headerStyle" className="mb-2">Estilo de Encabezado</Label>
                                 <Select
                                   value={cvData.customization.headerStyle}
                                   onValueChange={(value) => updateCustomization("headerStyle", value)}
@@ -689,7 +692,7 @@ export default function CVGenerator() {
                             </div>
                           </div>
 
-                          {/* <Separator /> */}
+                          <Separator />
 
                           {/* Layout Options */}
                           <div>
